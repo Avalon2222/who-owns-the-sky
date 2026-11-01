@@ -1,5 +1,11 @@
 # 🎓 Panduan Belajar: Membaca Langit dengan Python
 
+> **Catatan pembaruan.** Sejak November 2026 sumber live utama adalah [adsb.lol](https://adsb.lol) (`src/adsb.py`),
+> karena OpenSky tidak dapat dihubungi dari Streamlit Community Cloud. Langkah-langkah di bawah tetap berlaku:
+> `src/opensky.py` masih dipakai sebagai cadangan dan untuk merekam sampel, dan `src/adsb.py` menghasilkan DataFrame
+> dengan kolom yang persis sama (ditambah tebakan negara dari awalan registrasi), sehingga semua langkah setelah
+> "DataFrame rapi" tidak berubah.
+
 Panduan ini untuk pembaca yang sudah bisa menulis beberapa baris Python tetapi belum pernah memakai API publik,
 pandas secara serius, atau membuat peta. Tujuannya bukan menghafal kode, melainkan memahami **mengapa** setiap
 bagian ditulis demikian. Bacalah sambil membuka file yang disebut, dan ubahlah sesuatu di tiap langkah. Jika
@@ -15,10 +21,10 @@ Perkiraan waktu: 3–4 jam, dapat dibagi ke beberapa sesi.
 flowchart TB
     subgraph LUAR["Dunia luar"]
         A[Pesawat memancarkan ADS-B<br/>1x per detik, tidak terenkripsi]
-        B[Ribuan penerima sukarelawan<br/>OpenSky Network]
+        B[Ribuan penerima sukarelawan<br/>adsb.lol, cadangan OpenSky Network]
     end
     subgraph DATA["1. DATA"]
-        C[src/opensky.py<br/>HTTP GET → JSON → DataFrame]
+        C[src/adsb.py atau src/opensky.py<br/>HTTP GET → JSON → DataFrame]
         S[data/sample/snapshots.csv<br/>cadangan offline]
     end
     subgraph LOGIKA["2. LOGIKA (src/)"]

@@ -191,7 +191,7 @@ if st.button("💾 Simpan jejak sesi"):
 ### Latihan 9 — Auto-refresh ⭐⭐⭐
 
 Buat aplikasi menyegarkan diri setiap 30 detik saat mode live, tanpa menekan tombol, tetapi hanya jika pengguna
-mengaktifkan toggle "Putar otomatis". Pikirkan dampaknya terhadap kuota OpenSky (100 permintaan per hari).
+mengaktifkan toggle "Putar otomatis". Pikirkan dampaknya terhadap batas laju adsb.lol (HTTP 429 bila terlalu rapat).
 
 <details><summary>Petunjuk</summary>
 Streamlit punya <code>st.fragment(run_every="30s")</code> untuk menjalankan ulang sebagian halaman secara berkala. Bungkus bagian KPI + peta ke dalam fungsi berdekorator fragment. Alternatif sederhana: <code>time.sleep(30); st.rerun()</code> di akhir skrip, tetapi ini memblokir seluruh halaman.
@@ -209,7 +209,7 @@ def blok_live():
     ...  # KPI dan peta
 blok_live()
 ```
-Dengan 30 detik per permintaan, satu jam menonton = 120 permintaan, melebihi kuota harian anonim. Pertimbangkan jeda 60 detik, atau daftar akun OpenSky untuk kuota lebih besar.
+Dengan 30 detik per siklus dan dua lingkaran per siklus, satu jam menonton = 240 permintaan. adsb.lol tidak punya kuota harian, tetapi menolak permintaan yang terlalu rapat; pertimbangkan jeda 60 detik dan pastikan jeda antarlingkaran tetap ada.
 </details>
 
 ---

@@ -1,7 +1,7 @@
-"""Memuat data: bandara (CSV statis), sampel offline, atau data live OpenSky.
+"""Memuat data: bandara (CSV statis), sampel offline, atau data live (adsb.lol, cadangan OpenSky).
 
-Prinsip: aplikasi tidak boleh gagal hanya karena internet mati atau kuota
-OpenSky habis. Karena itu setiap pemanggilan live memiliki cadangan sampel.
+Prinsip: aplikasi tidak boleh gagal hanya karena internet mati atau sumber live
+menolak. Karena itu setiap pemanggilan live memiliki cadangan sampel.
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src import opensky
+from src import adsb, opensky
 
 DIR_PROYEK = Path(__file__).resolve().parent.parent
 DIR_DATA = DIR_PROYEK / "data"
@@ -66,16 +66,26 @@ def snapshot_terakhir(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def muat_live_atau_sampel() -> tuple[pd.DataFrame, str, str]:
-    """Mencoba OpenSky; jika gagal, memakai sampel.
+    """Mencoba adsb.lol, lalu OpenSky; jika keduanya gagal, memakai sampel.
 
     Mengembalikan (DataFrame satu snapshot, sumber, pesan) dengan
     ``sumber`` bernilai "live" atau "sampel".
     """
+    kesalahan: list[str] = []
+    try:
+        df, info = adsb.ambil_dataframe()
+        if df.empty:
+            raise adsb.AdsbError("adsb.lol mengembalikan 0 pesawat untuk kotak Indonesia.")
+        catatan = "" if info["berhasil"] == info["total"] else f" ({info['berhasil']}/{info['total']} wilayah terjawab)"
+        return df, "live", f"Data live adsb.lol, {len(df)} pesawat{catatan}."
+    except adsb.AdsbError as exc:
+        kesalahan.append(str(exc))
     try:
         df = opensky.ambil_dataframe()
         if df.empty:
             raise opensky.OpenSkyError("OpenSky mengembalikan 0 pesawat untuk kotak Indonesia.")
         return df, "live", f"Data live OpenSky, {len(df)} pesawat."
     except opensky.OpenSkyError as exc:
-        sampel = snapshot_terakhir(muat_sampel())
-        return sampel, "sampel", f"{exc} Menampilkan sampel offline."
+        kesalahan.append(str(exc))
+    sampel = snapshot_terakhir(muat_sampel())
+    return sampel, "sampel", " ".join(kesalahan) + " Menampilkan sampel offline."

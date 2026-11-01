@@ -1,4 +1,4 @@
-"""Who Owns the Sky? — peta pesawat di atas Indonesia dari data ADS-B publik (OpenSky).
+"""Who Owns the Sky? — peta pesawat di atas Indonesia dari data ADS-B publik (adsb.lol).
 
 Jalankan: streamlit run app.py
 Struktur file ini dibaca dari atas ke bawah: konfigurasi → data → sidebar → KPI → tab.
@@ -15,17 +15,18 @@ import plotly.graph_objects as go
 import streamlit as st
 from streamlit_folium import st_folium
 
-from src import analisis, muat_data, opensky, peta
+from src import adsb, analisis, muat_data, opensky, peta
 from src import maskapai as mk
 
 # ------------------------------------------------------------------ konfigurasi
 st.set_page_config(page_title="Who Owns the Sky?", page_icon="✈️", layout="wide")
 
-# Kredensial OpenSky (opsional). Di Streamlit Community Cloud diisi lewat menu Secrets:
+# Sumber live utama adalah adsb.lol (tanpa akun). OpenSky hanya cadangan; kredensialnya
+# opsional dan di Streamlit Community Cloud diisi lewat menu Secrets:
 #   [opensky]
 #   client_id = "..."
 #   client_secret = "..."
-# Tanpa kredensial, aplikasi memakai akses anonim lalu jatuh ke sampel bila kuota habis.
+# Jika semua sumber live gagal, aplikasi jatuh ke sampel offline.
 try:
     _opensky = st.secrets.get("opensky", {})
     for _kunci in ("client_id", "client_secret"):
@@ -82,7 +83,7 @@ def sampel_df() -> pd.DataFrame:
 
 @st.cache_data(ttl=30, show_spinner=False)
 def live_df() -> tuple[pd.DataFrame, str, str]:
-    """Snapshot live (cache 30 detik agar kuota OpenSky awet). Jatuh ke sampel bila gagal."""
+    """Snapshot live (cache 30 detik agar tidak membebani adsb.lol). Jatuh ke sampel bila gagal."""
     df, sumber, pesan = muat_data.muat_live_atau_sampel()
     return analisis.perkaya(df, bandara_df()), sumber, pesan
 
@@ -108,8 +109,8 @@ with st.sidebar:
 
     sumber_pilihan = st.radio(
         "Sumber data",
-        ["Live (OpenSky)", "Sampel offline"],
-        help="Live menarik data ADS-B terbaru dari OpenSky Network (gratis; anonim bila tanpa akun, kuota terbatas). "
+        ["Live (adsb.lol)", "Sampel offline"],
+        help="Live menarik data ADS-B terbaru dari adsb.lol (gratis, tanpa akun), dengan OpenSky sebagai cadangan. "
              "Sampel offline adalah rekaman beberapa snapshot yang disertakan dalam repositori.",
     )
     kol_a, kol_b = st.columns(2)
@@ -144,7 +145,7 @@ with st.sidebar:
     st.divider()
     mode_belajar = st.toggle("🎓 Mode belajar", value=False, help="Tampilkan penjelasan konsep di setiap bagian.")
     st.caption(
-        "Data: [OpenSky Network](https://opensky-network.org) · peta dasar Esri. "
+        "Data: [adsb.lol](https://adsb.lol) (cadangan [OpenSky](https://opensky-network.org)) · peta dasar Esri. "
         "Posisi pesawat berasal dari penerima sukarelawan, sehingga cakupan di Indonesia timur tipis."
     )
 
@@ -171,7 +172,7 @@ jejak_f = terapkan_filter(jejak)
 st.title("Who Owns the Sky?")
 st.markdown(
     "Siapa yang menguasai ruang udara Indonesia **saat ini**? Setiap ikon adalah satu pesawat yang "
-    "memancarkan sinyal ADS-B dan tertangkap penerima publik OpenSky Network. "
+    "memancarkan sinyal ADS-B dan tertangkap jaringan penerima publik (adsb.lol). "
     "Warna menunjukkan negara registrasi, arah ikon mengikuti arah terbang."
 )
 
@@ -202,15 +203,17 @@ if mode_belajar:
             sekitar satu kali per detik, berisi identitas (alamat ICAO 24-bit), posisi GPS, ketinggian, kecepatan,
             dan arah. Sinyal ini tidak terenkripsi, sehingga siapa pun dengan antena murah dapat menerimanya.
 
-            **OpenSky Network** mengumpulkan sinyal dari ribuan penerima sukarelawan dan menyediakannya lewat API.
-            Aplikasi ini memanggil `GET /api/states/all` dengan kotak batas Indonesia (`src/opensky.py`), lalu:
+            **adsb.lol** mengumpulkan sinyal dari ribuan penerima sukarelawan dan menyediakannya lewat API gratis
+            tanpa akun. Aplikasi ini memanggil `GET /v2/lat/{lat}/lon/{lon}/dist/{dist}` untuk dua lingkaran
+            yang menutup Indonesia (`src/adsb.py`), lalu:
 
-            1. memberi nama 17 kolom tanpa nama menjadi DataFrame (`states_ke_dataframe`),
+            1. menggabungkan hasil kedua lingkaran, mengubah kaki dan knot ke meter dan m/s (`ac_ke_dataframe`),
             2. menebak maskapai dari 3 huruf pertama callsign (`src/maskapai.py`),
             3. menebak fase terbang dari ketinggian dan laju vertikal (`src/analisis.py`).
 
-            **"Registrasi Indonesia"** mengikuti kolom `origin_country` OpenSky, yaitu negara tempat pesawat
-            terdaftar (ditentukan dari blok alamat ICAO), bukan negara maskapai yang mengoperasikannya.
+            **"Registrasi Indonesia"** adalah negara tempat pesawat terdaftar, ditebak dari awalan registrasi
+            (`PK-` = Indonesia) atau blok alamat ICAO 24-bit, bukan negara maskapai yang mengoperasikannya.
+            Jika adsb.lol tidak dapat dihubungi, aplikasi mencoba OpenSky Network, lalu sampel offline.
             """
         )
 
@@ -240,7 +243,7 @@ if halaman == HALAMAN[0]:
             st.markdown(
                 """
                 Folium tidak punya marker berbentuk pesawat, jadi `src/peta.py` membuat **DivIcon**: potongan HTML
-                berisi SVG pesawat dengan gaya `transform: rotate(<arah>deg)`. Kolom `arah` OpenSky adalah
+                berisi SVG pesawat dengan gaya `transform: rotate(<arah>deg)`. Kolom `arah` dari ADS-B adalah
                 *true track* dalam derajat searah jarum jam dari utara, dan SVG-nya digambar menghadap ke atas,
                 sehingga keduanya langsung cocok tanpa konversi.
 
@@ -378,7 +381,7 @@ if halaman == HALAMAN[2]:
                 Perbedaan **negara registrasi** dan **negara maskapai** juga penting: pesawat sewaan (leasing)
                 bisa terdaftar di Irlandia atau Malta tetapi dioperasikan maskapai Indonesia. Kolom
                 `negara_maskapai` pada tabel data mencoba menebak dari callsign; kolom `negara_asal` adalah
-                registrasi menurut OpenSky.
+                registrasi menurut data ADS-B.
                 """
             )
 
@@ -400,20 +403,22 @@ if halaman == HALAMAN[3]:
     st.subheader("Sumber & keterbatasan data")
     st.markdown(
         f"""
-        - **Posisi pesawat**: [OpenSky Network](https://opensky-network.org) REST API, endpoint `/states/all`,
-          kotak batas lintang {opensky.BBOX_INDONESIA['lamin']} s.d. {opensky.BBOX_INDONESIA['lamax']}, bujur
-          {opensky.BBOX_INDONESIA['lomin']} s.d. {opensky.BBOX_INDONESIA['lomax']}. Lisensi data OpenSky untuk
-          penggunaan non-komersial; lihat [ketentuan OpenSky](https://opensky-network.org/about/terms-of-use).
+        - **Posisi pesawat**: [adsb.lol](https://adsb.lol) REST API, endpoint `/v2/lat/{{lat}}/lon/{{lon}}/dist/{{dist}}`,
+          {len(adsb.TITIK_CAKUPAN)} lingkaran beradius {adsb.RADIUS_NM} mil laut, hasil dipotong ke kotak batas lintang
+          {opensky.BBOX_INDONESIA['lamin']} s.d. {opensky.BBOX_INDONESIA['lamax']}, bujur
+          {opensky.BBOX_INDONESIA['lomin']} s.d. {opensky.BBOX_INDONESIA['lomax']}. Data adsb.lol berlisensi
+          [ODbL](https://opendatacommons.org/licenses/odbl/). Cadangan: [OpenSky Network](https://opensky-network.org)
+          (non-komersial, lihat [ketentuan OpenSky](https://opensky-network.org/about/terms-of-use)).
         - **Bandara**: koordinat dari Wikipedia, dibulatkan 4 desimal (`data/bandara.csv`).
         - **Maskapai**: tebakan dari 3 huruf kode ICAO pada callsign (`src/maskapai.py`). Daftar tidak lengkap.
-        - **Cakupan tidak merata.** OpenSky bergantung pada penerima sukarelawan. Jawa, Bali, Sumatera bagian
+        - **Cakupan tidak merata.** adsb.lol dan OpenSky bergantung pada penerima sukarelawan. Jawa, Bali, Sumatera bagian
           timur, dan sekitar Singapura tercakup baik; Indonesia timur dan laut lepas sering kosong. Ruang udara
           yang terlihat "sepi" belum tentu benar-benar sepi.
         - **Pesawat tanpa ADS-B tidak terlihat**: sebagian pesawat militer, pesawat kecil lama, dan penerbangan
           yang sengaja mematikan transponder.
         - **Disclaimer.** Seluruh data berasal dari sumber publik dan bersifat edukatif; bukan data operasional
           penerbangan dan tidak boleh dipakai untuk navigasi atau keputusan keselamatan. Proyek ini merupakan
-          portofolio pribadi dan tidak berafiliasi dengan OpenSky Network, maskapai, atau otoritas penerbangan.
+          portofolio pribadi dan tidak berafiliasi dengan adsb.lol, OpenSky Network, maskapai, atau otoritas penerbangan.
         """
     )
 
@@ -426,9 +431,9 @@ if halaman == HALAMAN[4]:
           rankdir=LR; bgcolor="transparent"; node [shape=box, style="rounded,filled", fillcolor="#141d2f",
           fontcolor="#e8ecf4", color="#f2b705", fontname="Helvetica"]; edge [color="#9aa5b1"];
           A [label="Pesawat\\nmemancarkan ADS-B"];
-          B [label="Penerima sukarelawan\\nOpenSky Network"];
-          C [label="GET /api/states/all\\nsrc/opensky.py"];
-          D [label="DataFrame rapi\\nstates_ke_dataframe"];
+          B [label="Penerima sukarelawan\\nadsb.lol (cadangan: OpenSky)"];
+          C [label="GET /v2/lat/lon/dist, 2 lingkaran\\nsrc/adsb.py"];
+          D [label="DataFrame rapi\\nac_ke_dataframe"];
           E [label="perkaya()\\nmaskapai · fase · bandara terdekat\\nsrc/analisis.py"];
           F [label="Peta Folium\\nsrc/peta.py"];
           G [label="Grafik Plotly\\napp.py"];
@@ -441,17 +446,17 @@ if halaman == HALAMAN[4]:
         """
         | Langkah | File | Inti |
         |---|---|---|
-        | Tarik data | `src/opensky.py` | Satu permintaan HTTP dengan kotak batas Indonesia; cache 30 detik; gagal → sampel |
-        | Rapikan | `src/opensky.py` | 17 kolom tanpa nama → DataFrame bernama, callsign dibersihkan, waktu UTC |
+        | Tarik data | `src/adsb.py` | Dua permintaan HTTP (lingkaran barat dan timur) dengan jeda 1 detik; cache 30 detik; gagal → OpenSky → sampel |
+        | Rapikan | `src/adsb.py` | Gabung dan buang duplikat per alamat ICAO, kaki → meter, knot → m/s, tebak negara dari registrasi |
         | Perkaya | `src/analisis.py` | Tebak maskapai, fase terbang, bandara terdekat (haversine) |
         | Peta | `src/peta.py` | DivIcon SVG berputar sesuai arah; HeatMap dari seluruh jejak |
         | Hitung | `src/analisis.py` | Pesawat unik per negara/maskapai, grid kepadatan, bandara tersibuk, panjang jejak |
         | Rekam sampel | `scripts/kumpulkan_sampel.py` | Menyimpan N snapshot ke CSV agar aplikasi bisa dipakai offline |
 
-        **Kuota OpenSky.** Pengguna anonim mendapat sekitar 400 kredit per hari. Kotak seluas Indonesia
-        (lebih dari 400 derajat persegi) berbiaya 4 kredit per permintaan, jadi kira-kira 100 permintaan per hari.
-        Dengan cache 30 detik, menonton selama satu jam tanpa henti menghabiskan sekitar separuhnya.
-        Jika kuota habis, aplikasi otomatis beralih ke sampel offline dan memberi tahu lewat pesan oranye.
+        **Batas laju adsb.lol.** API ini gratis tanpa akun, tetapi menolak permintaan yang terlalu rapat (HTTP 429).
+        Karena itu aplikasi hanya memanggil dua lingkaran besar dengan jeda satu detik dan menyimpan hasilnya
+        30 detik. Lingkaran yang ditolak dilewati (peta tetap terisi sebagian); jika keduanya gagal, aplikasi
+        mencoba OpenSky Network, lalu sampel offline, dan memberi tahu lewat pesan oranye.
         """
     )
     if mode_belajar:
