@@ -108,15 +108,15 @@ with st.sidebar:
     st.caption("Setiap pesawat meninggalkan jejak.")
 
     sumber_pilihan = st.radio(
-        "Sumber data",
-        ["Live (adsb.lol)", "Sampel offline"],
+        "Data source",
+        ["Live (adsb.lol)", "Offline sample"],
         help="Live menarik data ADS-B terbaru dari adsb.lol (gratis, tanpa akun), dengan OpenSky sebagai cadangan. "
              "Sampel offline adalah rekaman beberapa snapshot yang disertakan dalam repositori.",
     )
     kol_a, kol_b = st.columns(2)
-    if kol_a.button("🔄 Segarkan", use_container_width=True, help="Tarik snapshot baru (cache 30 detik)."):
+    if kol_a.button("🔄 Refresh", use_container_width=True, help="Ambil snapshot baru (cache 30 detik)."):
         live_df.clear()
-    if kol_b.button("🧹 Hapus jejak", use_container_width=True, help="Kosongkan jejak yang terkumpul di mode live."):
+    if kol_b.button("🧹 Clear trail", use_container_width=True, help="Kosongkan jejak yang terkumpul di mode live."):
         st.session_state.pop("jejak_live", None)
 
     bandara = bandara_df()
@@ -135,15 +135,15 @@ with st.sidebar:
     st.divider()
     st.subheader("Filter")
     negara_opsi = sorted(terkini["negara_asal"].dropna().unique().tolist())
-    negara_pilih = st.multiselect("Negara registrasi", negara_opsi, default=[])
+    negara_pilih = st.multiselect("Registration country", negara_opsi, default=[])
     maskapai_opsi = analisis.hitung_unik(terkini, "maskapai")["maskapai"].tolist()
-    maskapai_pilih = st.multiselect("Maskapai", maskapai_opsi, default=[])
-    sembunyikan_darat = st.checkbox("Sembunyikan pesawat di darat", value=False)
+    maskapai_pilih = st.multiselect("Airline", maskapai_opsi, default=[])
+    sembunyikan_darat = st.checkbox("Hide aircraft on ground", value=False)
     alt_maks = int(max(45000, (terkini["alt_kaki"].max() if terkini["alt_kaki"].notna().any() else 45000)))
-    rentang_alt = st.slider("Ketinggian (kaki)", 0, alt_maks, (0, alt_maks), step=1000)
+    rentang_alt = st.slider("Altitude (ft)", 0, alt_maks, (0, alt_maks), step=1000)
 
     st.divider()
-    mode_belajar = st.toggle("🎓 Mode belajar", value=False, help="Tampilkan penjelasan konsep di setiap bagian.")
+    mode_belajar = st.toggle("🎓 Learning mode", value=False, help="Tampilkan penjelasan konsep di setiap bagian.")
     st.caption(
         "Data: [adsb.lol](https://adsb.lol) (cadangan [OpenSky](https://opensky-network.org)) · peta dasar Esri. "
         "Posisi pesawat berasal dari penerima sukarelawan, sehingga cakupan di Indonesia timur tipis."
@@ -219,7 +219,7 @@ if mode_belajar:
 
 # Navigasi memakai segmented control, bukan st.tabs: tab tersembunyi berukuran 0 piksel
 # membuat Leaflet (terutama HeatMap) gagal menggambar peta kedua. Hanya satu halaman dirender.
-HALAMAN = ["🛩️ Peta langsung", "🔥 Heatmap jejak", "👑 Siapa pemilik langit", "📋 Data & sumber", "🧭 Cara kerja"]
+HALAMAN = ["🛩️ Live map", "🔥 Trail heatmap", "👑 Who owns the sky", "📋 Data & sources", "🧭 How it works"]
 halaman = st.segmented_control("Halaman", HALAMAN, default=HALAMAN[0], label_visibility="collapsed")
 if halaman is None:
     halaman = HALAMAN[0]
@@ -260,7 +260,7 @@ if halaman == HALAMAN[1]:
     info_jejak = muat_data.info_sampel(jejak_f)
     if sumber == "live" and info_jejak["snapshot"] < 3:
         st.info(
-            f"Jejak live baru {info_jejak['snapshot']} snapshot. Tekan **Segarkan** beberapa kali (jeda 30 detik) "
+            f"Jejak live baru {info_jejak['snapshot']} snapshot. Tekan **Refresh** beberapa kali (jeda 30 detik) "
             "agar jejak terkumpul, atau beralih ke **Sampel offline** untuk melihat heatmap dari rekaman penuh."
         )
     kh1, kh2, kh3 = st.columns(3)
@@ -283,7 +283,7 @@ if halaman == HALAMAN[1]:
 
     c1, c2 = st.columns(2)
     with c1:
-        st.subheader("Sel udara terpadat")
+        st.subheader("Busiest grid cells")
         if teratas.empty:
             st.write("-")
         else:
@@ -292,7 +292,7 @@ if halaman == HALAMAN[1]:
             st.dataframe(tampil[["Lokasi", "Pesawat unik", "Posisi terekam", "Lat", "Lon"]],
                          use_container_width=True, hide_index=True)
     with c2:
-        st.subheader("Jejak terpanjang dalam rekaman")
+        st.subheader("Longest trails")
         pj = analisis.panjang_jejak_km(jejak_f).head(10)
         if pj.empty:
             st.write("Perlu minimal 2 snapshot.")
@@ -387,20 +387,20 @@ if halaman == HALAMAN[2]:
 
 # ------------------------------------------------------------------ tab data
 if halaman == HALAMAN[3]:
-    st.subheader("Snapshot terkini")
+    st.subheader("Latest snapshot")
     kolom_tampil = ["callsign", "maskapai", "negara_asal", "negara_maskapai", "fase", "alt_kaki", "kecepatan_kmh",
                     "arah", "laju_vertikal", "lat", "lon", "bandara_terdekat", "jarak_bandara_km", "icao24", "squawk", "waktu"]
     st.dataframe(terkini_f[kolom_tampil].sort_values("callsign"), use_container_width=True, hide_index=True, height=420)
     d1, d2 = st.columns(2)
-    d1.download_button("⬇️ Unduh snapshot terkini (CSV)", terkini_f.to_csv(index=False).encode("utf-8"),
+    d1.download_button("⬇️ Download snapshot terkini (CSV)", terkini_f.to_csv(index=False).encode("utf-8"),
                        "snapshot_terkini.csv", "text/csv", use_container_width=True)
-    d2.download_button("⬇️ Unduh seluruh jejak (CSV)", jejak_f.to_csv(index=False).encode("utf-8"),
+    d2.download_button("⬇️ Download seluruh jejak (CSV)", jejak_f.to_csv(index=False).encode("utf-8"),
                        "jejak.csv", "text/csv", use_container_width=True)
 
-    st.subheader("Bandara acuan")
+    st.subheader("Reference airports")
     st.dataframe(bandara, use_container_width=True, hide_index=True, height=260)
 
-    st.subheader("Sumber & keterbatasan data")
+    st.subheader("Sources & limitations")
     st.markdown(
         f"""
         - **Posisi pesawat**: [adsb.lol](https://adsb.lol) REST API, endpoint `/v2/lat/{{lat}}/lon/{{lon}}/dist/{{dist}}`,
@@ -424,7 +424,7 @@ if halaman == HALAMAN[3]:
 
 # ------------------------------------------------------------------ tab cara kerja
 if halaman == HALAMAN[4]:
-    st.subheader("Alur data")
+    st.subheader("Data flow")
     st.graphviz_chart(
         """
         digraph G {

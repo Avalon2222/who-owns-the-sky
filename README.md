@@ -32,15 +32,15 @@ interaktif** dengan ikon yang berputar mengikuti arah terbang.
 
 | Tab | Isi |
 |---|---|
-| 🛩️ Peta langsung | Satu ikon per pesawat, diwarnai per negara registrasi (Indonesia emas) dan diputar sesuai arah terbang. Klik untuk callsign, maskapai, fase, ketinggian, kecepatan, bandara terdekat. Lapisan bandara dan pesawat Indonesia/asing dapat dimatikan |
-| 🔥 Heatmap jejak | Heatmap dari seluruh posisi yang terekam (sampel offline, atau jejak yang terkumpul selama sesi live), tabel sel udara terpadat dengan label bandara terdekat, dan daftar jejak terpanjang |
-| 👑 Siapa pemilik langit | Grafik pesawat unik per negara registrasi dan per maskapai, fase penerbangan, sebaran ketinggian, dan perkiraan bandara tersibuk dari pesawat rendah di sekitarnya |
-| 📋 Data & sumber | Tabel snapshot terkini, unduh CSV (snapshot atau seluruh jejak), daftar bandara acuan, sumber dan keterbatasan |
-| 🧭 Cara kerja | Diagram alur data dari pesawat sampai peta, tabel per langkah, penjelasan batas laju API |
-| 🎓 Mode belajar | Toggle di sidebar: setiap tab menampilkan expander berisi konsep (ADS-B, DivIcon berputar, grid kepadatan, pesawat unik, haversine) beserta potongan kode |
+| 🛩️ Live map | Satu ikon per pesawat, diwarnai per negara registrasi (Indonesia emas) dan diputar sesuai arah terbang. Klik untuk callsign, maskapai, fase, ketinggian, kecepatan, bandara terdekat. Lapisan bandara dan pesawat Indonesia/asing dapat dimatikan |
+| 🔥 Trail heatmap | Heatmap dari seluruh posisi yang terekam (sampel offline, atau jejak yang terkumpul selama sesi live), tabel sel udara terpadat dengan label bandara terdekat, dan daftar jejak terpanjang |
+| 👑 Who owns the sky | Grafik pesawat unik per negara registrasi dan per maskapai, fase penerbangan, sebaran ketinggian, dan perkiraan bandara tersibuk dari pesawat rendah di sekitarnya |
+| 📋 Data & Sources | Tabel snapshot terkini, download CSV (snapshot atau seluruh jejak), daftar bandara acuan, sumber dan keterbatasan |
+| 🧭 How it works | Diagram alur data dari pesawat sampai peta, tabel per langkah, penjelasan batas laju API |
+| 🎓 Learning mode | Toggle di sidebar: setiap tab menampilkan expander berisi konsep (ADS-B, DivIcon berputar, grid kepadatan, pesawat unik, haversine) beserta potongan kode |
 
 Sidebar menyediakan pilihan sumber data (**Live** dengan cadangan otomatis ke sampel bila sumber live gagal, atau
-**Sampel offline**), tombol segarkan, serta filter negara, maskapai, ketinggian, dan pesawat di darat.
+**Sampel offline**), tombol Refresh, serta filter negara, maskapai, ketinggian, dan pesawat di darat.
 
 Mode live memakai [adsb.lol](https://adsb.lol): gratis, tanpa akun, dan dapat dihubungi dari Streamlit Community
 Cloud. Dua lingkaran beradius 1.000 mil laut (`src/adsb.py`) menutup Sabang sampai Merauke; hasilnya digabung dan
@@ -68,7 +68,7 @@ streamlit run app.py
 ```
 
 Buka `http://localhost:8501`. Jalankan pengujian dengan `python -m pytest tests/ -v` (38 tes).
-Tanpa internet, pilih **Sampel offline** di sidebar; peta dasar tetap memerlukan koneksi untuk mengunduh tile Esri.
+Tanpa internet, pilih **Offline sample** di sidebar; peta dasar tetap memerlukan koneksi untuk mengunduh tile Esri.
 
 Untuk merekam sampel baru (misalnya pada jam sibuk siang hari):
 
