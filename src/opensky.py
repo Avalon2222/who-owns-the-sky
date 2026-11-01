@@ -75,7 +75,7 @@ def kredensial() -> tuple[str, str] | None:
     return None
 
 
-def header_otorisasi(session: requests.Session | None = None, timeout: float = 20) -> dict[str, str]:
+def header_otorisasi(session: requests.Session | None = None, timeout: float | tuple[float, float] = TIMEOUT) -> dict[str, str]:
     """Header ``Authorization: Bearer ...`` bila kredensial tersedia; dict kosong bila tidak.
 
     Token disimpan di memori dan diminta ulang satu menit sebelum kedaluwarsa.
@@ -106,9 +106,14 @@ def header_otorisasi(session: requests.Session | None = None, timeout: float = 2
         return {}
 
 
+# (batas waktu sambung, batas waktu baca) dalam detik: sambungan yang gagal cepat
+# ketahuan, sehingga aplikasi segera jatuh ke sampel offline.
+TIMEOUT = (5, 20)
+
+
 def ambil_states(
     bbox: dict[str, float] | None = None,
-    timeout: float = 20,
+    timeout: float | tuple[float, float] = TIMEOUT,
     session: requests.Session | None = None,
 ) -> dict[str, Any]:
     """Memanggil endpoint /states/all dan mengembalikan JSON mentah.
@@ -172,6 +177,6 @@ def states_ke_dataframe(payload: dict[str, Any]) -> pd.DataFrame:
     return df
 
 
-def ambil_dataframe(bbox: dict[str, float] | None = None, timeout: float = 20) -> pd.DataFrame:
+def ambil_dataframe(bbox: dict[str, float] | None = None, timeout: float | tuple[float, float] = TIMEOUT) -> pd.DataFrame:
     """Gabungan ``ambil_states`` + ``states_ke_dataframe`` untuk pemakaian sehari-hari."""
     return states_ke_dataframe(ambil_states(bbox=bbox, timeout=timeout))
