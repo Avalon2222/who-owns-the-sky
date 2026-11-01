@@ -31,6 +31,10 @@ URL_TOKEN = "https://auth.opensky-network.org/auth/realms/opensky-network/protoc
 # Token OAuth2 yang sedang berlaku: {"token": str, "kedaluwarsa": unix time}.
 _TOKEN: dict[str, Any] = {}
 
+# (batas waktu sambung, batas waktu baca) dalam detik: sambungan yang gagal cepat
+# ketahuan, sehingga aplikasi segera jatuh ke sampel offline.
+TIMEOUT = (5, 20)
+
 # Kotak batas Indonesia dengan sedikit margin: Sabang hingga Merauke,
 # Pulau Rote hingga Miangas. Singapura dan Semenanjung Malaysia bagian selatan ikut masuk.
 BBOX_INDONESIA: dict[str, float] = {
@@ -104,11 +108,6 @@ def header_otorisasi(session: requests.Session | None = None, timeout: float | t
         return {"Authorization": f"Bearer {token}"}
     except (requests.RequestException, ValueError):
         return {}
-
-
-# (batas waktu sambung, batas waktu baca) dalam detik: sambungan yang gagal cepat
-# ketahuan, sehingga aplikasi segera jatuh ke sampel offline.
-TIMEOUT = (5, 20)
 
 
 def ambil_states(
