@@ -67,7 +67,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Buka `http://localhost:8501`. Jalankan pengujian dengan `python -m pytest tests/ -v` (38 tes).
+Buka `http://localhost:8501`. Jalankan pengujian dengan `python -m pytest tests/ -v` (38 tes; otomatis jalan di GitHub Actions setiap push dan pull request).
 Tanpa internet, pilih **Offline sample** di sidebar; peta dasar tetap memerlukan koneksi untuk mengunduh tile Esri.
 
 Untuk merekam sampel baru (misalnya pada jam sibuk siang hari):
