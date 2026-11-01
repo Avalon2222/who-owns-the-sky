@@ -6,6 +6,7 @@ Struktur file ini dibaca dari atas ke bawah: konfigurasi → data → sidebar �
 
 from __future__ import annotations
 
+import os
 from datetime import timezone, timedelta
 
 import pandas as pd
@@ -19,6 +20,19 @@ from src import maskapai as mk
 
 # ------------------------------------------------------------------ konfigurasi
 st.set_page_config(page_title="Who Owns the Sky?", page_icon="✈️", layout="wide")
+
+# Kredensial OpenSky (opsional). Di Streamlit Community Cloud diisi lewat menu Secrets:
+#   [opensky]
+#   client_id = "..."
+#   client_secret = "..."
+# Tanpa kredensial, aplikasi memakai akses anonim lalu jatuh ke sampel bila kuota habis.
+try:
+    _opensky = st.secrets.get("opensky", {})
+    for _kunci in ("client_id", "client_secret"):
+        if _opensky.get(_kunci):
+            os.environ.setdefault(f"OPENSKY_{_kunci.upper()}", str(_opensky[_kunci]))
+except Exception:  # tidak ada berkas secrets: akses anonim
+    pass
 
 WIB = timezone(timedelta(hours=7))
 EMAS = "#f2b705"
@@ -95,7 +109,7 @@ with st.sidebar:
     sumber_pilihan = st.radio(
         "Sumber data",
         ["Live (OpenSky)", "Sampel offline"],
-        help="Live menarik data ADS-B terbaru dari OpenSky Network (gratis, anonim, kuota terbatas). "
+        help="Live menarik data ADS-B terbaru dari OpenSky Network (gratis; anonim bila tanpa akun, kuota terbatas). "
              "Sampel offline adalah rekaman beberapa snapshot yang disertakan dalam repositori.",
     )
     kol_a, kol_b = st.columns(2)

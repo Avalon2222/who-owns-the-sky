@@ -1,4 +1,4 @@
-"""Pengambilan data ADS-B dari OpenSky Network (REST API, akses anonim).
+"""Pengambilan data ADS-B dari OpenSky Network (REST API, anonim atau dengan akun).
 
 Dokumentasi: https://openskynetwork.github.io/opensky-api/rest.html
 Endpoint yang dipakai: GET /api/states/all dengan kotak batas (bounding box).
@@ -8,18 +8,28 @@ Catatan:
   (lebih dari 400 derajat persegi) menghabiskan 4 kredit per permintaan, sehingga
   kira-kira 100 permintaan per hari. Aplikasi menyimpan hasil dalam cache 30 detik
   dan selalu punya cadangan berupa data sampel offline.
+- Akun OpenSky gratis memberi kuota lebih besar. Isi variabel lingkungan
+  OPENSKY_CLIENT_ID dan OPENSKY_CLIENT_SECRET (API client dari halaman akun
+  OpenSky); modul ini lalu meminta token OAuth2 dan memakainya sebagai Bearer.
+  Bila token gagal didapat, permintaan tetap dikirim secara anonim.
 - Setiap "state vector" adalah daftar 17 kolom tanpa nama; fungsi di bawah
   memberi nama dan mengubahnya menjadi DataFrame.
 """
 
 from __future__ import annotations
 
+import os
+import time
 from typing import Any
 
 import pandas as pd
 import requests
 
 URL_STATES = "https://opensky-network.org/api/states/all"
+URL_TOKEN = "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"
+
+# Token OAuth2 yang sedang berlaku: {"token": str, "kedaluwarsa": unix time}.
+_TOKEN: dict[str, Any] = {}
 
 # Kotak batas Indonesia dengan sedikit margin: Sabang hingga Merauke,
 # Pulau Rote hingga Miangas. Singapura dan Semenanjung Malaysia bagian selatan ikut masuk.
@@ -56,6 +66,46 @@ class OpenSkyError(RuntimeError):
     """Kesalahan ketika menghubungi OpenSky (jaringan, kuota, atau respons tidak valid)."""
 
 
+def kredensial() -> tuple[str, str] | None:
+    """Client ID dan secret OpenSky dari variabel lingkungan, atau None bila tidak diisi."""
+    cid = os.environ.get("OPENSKY_CLIENT_ID", "").strip()
+    rahasia = os.environ.get("OPENSKY_CLIENT_SECRET", "").strip()
+    if cid and rahasia:
+        return cid, rahasia
+    return None
+
+
+def header_otorisasi(session: requests.Session | None = None, timeout: float = 20) -> dict[str, str]:
+    """Header ``Authorization: Bearer ...`` bila kredensial tersedia; dict kosong bila tidak.
+
+    Token disimpan di memori dan diminta ulang satu menit sebelum kedaluwarsa.
+    Kegagalan mendapatkan token tidak dianggap fatal: pemanggil tetap bisa
+    mengirim permintaan anonim.
+    """
+    kred = kredensial()
+    if kred is None:
+        return {}
+    if _TOKEN and _TOKEN.get("kedaluwarsa", 0) - 60 > time.time():
+        return {"Authorization": f"Bearer {_TOKEN['token']}"}
+    klien = session or requests
+    try:
+        resp = klien.post(
+            URL_TOKEN,
+            data={"grant_type": "client_credentials", "client_id": kred[0], "client_secret": kred[1]},
+            timeout=timeout,
+        )
+        if resp.status_code != 200:
+            return {}
+        data = resp.json()
+        token = data.get("access_token")
+        if not token:
+            return {}
+        _TOKEN.update(token=token, kedaluwarsa=time.time() + float(data.get("expires_in", 1800)))
+        return {"Authorization": f"Bearer {token}"}
+    except (requests.RequestException, ValueError):
+        return {}
+
+
 def ambil_states(
     bbox: dict[str, float] | None = None,
     timeout: float = 20,
@@ -68,8 +118,12 @@ def ambil_states(
     """
     params = dict(bbox or BBOX_INDONESIA)
     klien = session or requests
+    headers = header_otorisasi(session=session, timeout=timeout)
     try:
-        resp = klien.get(URL_STATES, params=params, timeout=timeout)
+        if headers:
+            resp = klien.get(URL_STATES, params=params, timeout=timeout, headers=headers)
+        else:
+            resp = klien.get(URL_STATES, params=params, timeout=timeout)
     except requests.RequestException as exc:  # jaringan putus, DNS, timeout
         raise OpenSkyError(f"Tidak dapat menghubungi OpenSky: {exc}") from exc
 

@@ -39,6 +39,16 @@ interaktif** dengan ikon yang berputar mengikuti arah terbang.
 Sidebar menyediakan pilihan sumber data (**Live** dengan cadangan otomatis ke sampel bila OpenSky gagal, atau
 **Sampel offline**), tombol segarkan, serta filter negara, maskapai, ketinggian, dan pesawat di darat.
 
+Mode live berjalan tanpa akun (anonim, sekitar 100 permintaan per hari). Untuk kuota lebih besar, buat akun gratis
+di OpenSky, buat *API client* di halaman akun, lalu isi `OPENSKY_CLIENT_ID` dan `OPENSKY_CLIENT_SECRET` sebagai
+variabel lingkungan, atau di `.streamlit/secrets.toml`:
+
+```toml
+[opensky]
+client_id = "..."
+client_secret = "..."
+```
+
 ![Heatmap jejak](docs/screenshots/02_heatmap.png)
 ![Siapa pemilik langit](docs/screenshots/03_pemilik.png)
 
