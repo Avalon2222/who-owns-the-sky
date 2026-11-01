@@ -8,6 +8,8 @@
 busiest corridors and a running answer to "who owns the sky right now?". Python, pandas, Streamlit, Folium, Plotly.
 Ships with an offline sample so it works without internet.*
 
+**🚀 Coba langsung di browser:** [who-owns-the-sky.streamlit.app](https://who-owns-the-sky.streamlit.app)
+
 ![Peta langsung](docs/screenshots/01_peta.png)
 
 > ℹ️ **Disclaimer.** Seluruh data berasal dari **sumber publik** (OpenSky Network, Wikipedia) dan bersifat edukatif.
