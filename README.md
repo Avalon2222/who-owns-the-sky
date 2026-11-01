@@ -67,7 +67,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Buka `http://localhost:8501`. Jalankan pengujian dengan `python -m pytest tests/ -v` (38 tes; otomatis jalan di GitHub Actions setiap push dan pull request).
+Buka `http://localhost:8501`. Jalankan pengujian dengan `python -m pytest tests/ -v` (59 tes; otomatis jalan di GitHub Actions setiap push dan pull request).
 Tanpa internet, pilih **Offline sample** di sidebar; peta dasar tetap memerlukan koneksi untuk mengunduh tile Esri.
 
 Untuk merekam sampel baru (misalnya pada jam sibuk siang hari):
@@ -153,7 +153,7 @@ who-owns-the-sky/
 │   ├── BELAJAR.md              # panduan belajar langkah demi langkah
 │   ├── LATIHAN.md              # latihan bertingkat dengan kunci
 │   └── screenshots/
-├── tests/test_analisis.py      # 38 tes pytest
+├── tests/                      # 59 tes pytest: analisis, adsb, opensky
 └── requirements.txt
 ```
 
