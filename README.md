@@ -4,9 +4,20 @@
 > (adsb.lol, cadangan OpenSky Network), lengkap dengan heatmap koridor tersibuk dan jawaban atas satu pertanyaan sederhana:
 > siapa yang sedang menguasai ruang udara kita saat ini? Dibangun dengan Python, pandas, Streamlit, Folium, dan Plotly.
 
-*A live map of aircraft over Indonesia built from public ADS-B data (adsb.lol, OpenSky Network as fallback), with a heatmap of the
-busiest corridors and a running answer to "who owns the sky right now?". Python, pandas, Streamlit, Folium, Plotly.
-Ships with an offline sample so it works without internet.*
+## 🇬🇧 In English
+
+**Every aircraft leaves a trail.** A live map of every aircraft over Indonesia, built from public ADS-B signals, with a heatmap of the busiest air corridors and a running answer to one simple question: who owns the sky right now?
+
+- **Track** aircraft rotated to their heading and colored by country of registration.
+- **Spot** the busiest corridors from a density grid of every recorded position.
+- **Rank** who is flying overhead by country, airline, flight phase, and altitude.
+- **Stay up** with automatic fallback from adsb.lol to OpenSky Network to an offline sample.
+
+**Built with:** Python, pandas, Folium, Plotly, Streamlit  
+**Data:** adsb.lol and OpenSky Network (public ADS-B), airport reference data  
+**Engineering:** pytest suite with CI on GitHub Actions, plus a learning mode that explains ADS-B and the code behind each chart
+
+*The rest of this README is in Indonesian.*
 
 **🚀 Coba langsung di browser:** [who-owns-the-sky.streamlit.app](https://who-owns-the-sky.streamlit.app)
 
