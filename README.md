@@ -1,5 +1,7 @@
 # ✈️ Who Owns the Sky?
 
+[![Tes](https://github.com/Avalon2222/who-owns-the-sky/actions/workflows/tes.yml/badge.svg)](https://github.com/Avalon2222/who-owns-the-sky/actions/workflows/tes.yml) [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://who-owns-the-sky.streamlit.app)
+
 > **Setiap pesawat meninggalkan jejak.** Peta langsung pesawat di atas Indonesia dari data ADS-B publik
 > (adsb.lol, cadangan OpenSky Network), lengkap dengan heatmap koridor tersibuk dan jawaban atas satu pertanyaan sederhana:
 > siapa yang sedang menguasai ruang udara kita saat ini? Dibangun dengan Python, pandas, Streamlit, Folium, dan Plotly.
