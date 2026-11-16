@@ -241,10 +241,13 @@ def panjang_jejak_km(jejak: pd.DataFrame) -> pd.DataFrame:
         lat = grup["lat"].to_numpy()
         lon = grup["lon"].to_numpy()
         km = sum(haversine_km(lat[i], lon[i], lat[i + 1], lon[i + 1]) for i in range(len(lat) - 1))
+        # Callsign kadang kosong di sebagian snapshot; pakai yang terakhir terisi.
+        terisi = grup["callsign"].fillna("").astype(str).str.strip() != ""
+        terakhir = grup[terisi].iloc[-1] if terisi.any() else grup.iloc[-1]
         hasil.append({
             "icao24": icao,
-            "callsign": grup["callsign"].iloc[-1],
-            "maskapai": grup["maskapai"].iloc[-1] if "maskapai" in grup else "",
+            "callsign": terakhir["callsign"],
+            "maskapai": terakhir["maskapai"] if "maskapai" in grup else "",
             "segmen": len(grup) - 1,
             "km": round(km, 1),
         })

@@ -214,6 +214,22 @@ def test_panjang_jejak(df):
     assert hasil["km"].iloc[0] == pytest.approx(11.1, abs=0.2)
 
 
+
+def test_panjang_jejak_callsign_kosong_di_akhir():
+    # Snapshot terakhir kehilangan callsign: tabel tetap menampilkan callsign terakhir yang terisi.
+    jejak = pd.DataFrame({
+        "icao24": ["8a01af"] * 3,
+        "waktu_snapshot": [0, 20, 40],
+        "lat": [-6.0, -5.9, -5.8],
+        "lon": [107.0, 107.0, 107.0],
+        "callsign": ["LNI890", "LNI890", ""],
+        "maskapai": ["Lion Air", "Lion Air", maskapai.TIDAK_DIKENAL],
+    })
+    hasil = analisis.panjang_jejak_km(jejak)
+    assert hasil.iloc[0]["callsign"] == "LNI890"
+    assert hasil.iloc[0]["maskapai"] == "Lion Air"
+    assert hasil.iloc[0]["segmen"] == 2
+
 # ---------------------------------------------------------------- data & peta
 def test_bandara_csv_valid(bandara):
     assert len(bandara) >= 30
