@@ -29,7 +29,8 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     dp = p2 - p1
     dl = math.radians(lon2 - lon1)
     a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
-    return 2 * R_BUMI_KM * math.asin(math.sqrt(a))
+    # Pembulatan float bisa membuat a sedikit di atas 1 (titik antipoda) -> math domain error.
+    return 2 * R_BUMI_KM * math.asin(math.sqrt(min(1.0, max(0.0, a))))
 
 
 def haversine_vektor(lat: pd.Series, lon: pd.Series, lat0: float, lon0: float) -> pd.Series:
@@ -39,6 +40,7 @@ def haversine_vektor(lat: pd.Series, lon: pd.Series, lat0: float, lon0: float) -
     dp = p2 - p1
     dl = np.radians(lon0 - lon.to_numpy(dtype=float))
     a = np.sin(dp / 2) ** 2 + np.cos(p1) * math.cos(p2) * np.sin(dl / 2) ** 2
+    a = np.clip(a, 0.0, 1.0)
     return pd.Series(2 * R_BUMI_KM * np.arcsin(np.sqrt(a)), index=lat.index)
 
 

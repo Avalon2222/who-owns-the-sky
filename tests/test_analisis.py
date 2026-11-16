@@ -1,5 +1,7 @@
 """Tes untuk parsing OpenSky, tebakan maskapai, dan perhitungan. Jalankan: python -m pytest tests/ -v"""
 
+import math
+
 import pandas as pd
 import pytest
 
@@ -109,6 +111,15 @@ def test_haversine_vektor_sama_dengan_skalar():
     v = analisis.haversine_vektor(lat, lon, 0.0, 110.0)
     for i in range(3):
         assert v.iloc[i] == pytest.approx(analisis.haversine_km(lat[i], lon[i], 0.0, 110.0))
+
+
+def test_haversine_antipoda_tidak_error():
+    # Titik yang saling berseberangan di bumi: setengah keliling bumi, bukan ValueError.
+    jarak = analisis.haversine_km(0.0, 0.0, 0.0, 180.0)
+    assert jarak == pytest.approx(math.pi * analisis.R_BUMI_KM)
+    v = analisis.haversine_vektor(pd.Series([0.0, 45.0]), pd.Series([180.0, 10.0]), 0.0, 0.0)
+    assert not v.isna().any()
+    assert v.iloc[0] == pytest.approx(math.pi * analisis.R_BUMI_KM)
 
 
 @pytest.mark.parametrize(
