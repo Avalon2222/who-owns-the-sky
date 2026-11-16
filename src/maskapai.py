@@ -102,7 +102,7 @@ def prefix_callsign(callsign: str | None) -> str | None:
     >>> prefix_callsign("PK-ABC") is None
     True
     """
-    if not callsign:
+    if not isinstance(callsign, str) or not callsign:
         return None
     cocok = _POLA_ICAO.match(callsign.strip().upper())
     return cocok.group(1) if cocok else None
@@ -118,7 +118,8 @@ def tebak_maskapai(callsign: str | None) -> str:
     >>> tebak_maskapai("")
     'Tidak dikenal'
     """
-    if not callsign or not callsign.strip():
+    # Callsign dari DataFrame bisa NaN (float), bukan hanya None atau string kosong.
+    if not isinstance(callsign, str) or not callsign.strip():
         return TIDAK_DIKENAL
     cs = callsign.strip().upper()
     prefix = prefix_callsign(cs)

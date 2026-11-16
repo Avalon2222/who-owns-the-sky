@@ -73,6 +73,8 @@ def test_bbox_indonesia_masuk_akal():
         ("ZZZ999", maskapai.TIDAK_DIKENAL),
         ("", maskapai.TIDAK_DIKENAL),
         (None, maskapai.TIDAK_DIKENAL),
+        (float("nan"), maskapai.TIDAK_DIKENAL),
+        ("   ", maskapai.TIDAK_DIKENAL),
     ],
 )
 def test_tebak_maskapai(callsign, harapan):
@@ -85,6 +87,8 @@ def test_prefix_dan_negara_maskapai():
     assert maskapai.negara_maskapai("SIA33") == "Singapura"
     assert maskapai.apakah_maskapai_indonesia("WON1234")
     assert not maskapai.apakah_maskapai_indonesia("QFA41")
+    assert maskapai.prefix_callsign(float("nan")) is None
+    assert maskapai.negara_maskapai(float("nan")) is None
 
 
 def test_semua_kode_icao_tiga_huruf_kapital():
