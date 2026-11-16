@@ -126,9 +126,9 @@ def negara_registrasi(registrasi: str | None, icao24: str | None = None) -> str:
         for awalan in _AWALAN_URUT:
             if reg.startswith(awalan):
                 return NEGARA_REGISTRASI[awalan]
-    if icao24:
+    if isinstance(icao24, str) and icao24.strip():
         try:
-            nilai = int(icao24, 16)
+            nilai = int(icao24.strip(), 16)
         except ValueError:
             return NEGARA_TIDAK_DIKETAHUI
         for awal, akhir, negara in BLOK_ICAO:
@@ -139,7 +139,7 @@ def negara_registrasi(registrasi: str | None, icao24: str | None = None) -> str:
 
 def _sumber_posisi(tipe: str | None) -> int:
     """Kode sumber posisi mengikuti konvensi OpenSky: 0 ADS-B, 1 ASTERIX/TIS-B, 2 MLAT."""
-    t = (tipe or "").lower()
+    t = tipe.lower() if isinstance(tipe, str) else ""
     if t.startswith("mlat"):
         return 2
     if t.startswith("tisb"):
