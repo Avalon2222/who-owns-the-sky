@@ -66,6 +66,12 @@ def test_ac_ke_dataframe_di_darat_dan_mlat():
     assert sia["waktu_kontak"] == 1_700_000_000 - 2
 
 
+def test_laju_vertikal_pakai_geom_rate_bila_baro_rate_kosong():
+    ac = {"hex": "8a0001", "lat": -6.0, "lon": 107.0, "alt_baro": 5000, "baro_rate": None, "geom_rate": 1000}
+    df = adsb.ac_ke_dataframe([ac], waktu_snapshot=1_700_000_000)
+    assert df.iloc[0]["laju_vertikal"] == pytest.approx(1000 * adsb.KAKI_PER_MENIT_KE_MS)
+
+
 def test_ac_ke_dataframe_kosong():
     df = adsb.ac_ke_dataframe([], waktu_snapshot=0)
     assert df.empty and "negara_asal" in df.columns
