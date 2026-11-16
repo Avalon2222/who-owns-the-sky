@@ -30,6 +30,10 @@ PESAWAT = [
     ("", "7c1234", "Australia"),
     (None, "zz", adsb.NEGARA_TIDAK_DIKETAHUI),
     (None, None, adsb.NEGARA_TIDAK_DIKETAHUI),
+    (float("nan"), "8a04d7", "Indonesia"),
+    (" pk-lka ", None, "Indonesia"),
+    (None, float("nan"), adsb.NEGARA_TIDAK_DIKETAHUI),
+    (None, "~8a04d7", adsb.NEGARA_TIDAK_DIKETAHUI),
 ])
 def test_negara_registrasi(registrasi, icao, negara):
     assert adsb.negara_registrasi(registrasi, icao) == negara
@@ -128,3 +132,10 @@ def test_muat_live_jatuh_ke_sampel(monkeypatch):
     hasil, sumber, pesan = muat_data.muat_live_atau_sampel()
     assert sumber == "sampel" and "adsb.lol mati" in pesan and "OpenSky mati" in pesan
     assert not hasil.empty
+
+
+@pytest.mark.parametrize("tipe, kode", [
+    ("adsb_icao", 0), ("mlat", 2), ("tisb_other", 1), (None, 0), (float("nan"), 0),
+])
+def test_sumber_posisi(tipe, kode):
+    assert adsb._sumber_posisi(tipe) == kode
