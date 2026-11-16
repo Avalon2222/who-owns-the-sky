@@ -231,7 +231,10 @@ def ac_ke_dataframe(daftar: list[dict[str, Any]], waktu_snapshot: int,
         alt_geom = ac.get("alt_geom")
         alt_geo_m = alt_geom * KAKI_KE_METER if isinstance(alt_geom, (int, float)) else None
         gs = ac.get("gs")
-        rate = ac.get("baro_rate", ac.get("geom_rate"))
+        # baro_rate bisa ada tapi bernilai null; saat itu pakai geom_rate.
+        rate = ac.get("baro_rate")
+        if not isinstance(rate, (int, float)):
+            rate = ac.get("geom_rate")
         seen = ac.get("seen") or 0
         seen_pos = ac.get("seen_pos", seen) or 0
         icao24 = str(ac.get("hex") or "").lower()
