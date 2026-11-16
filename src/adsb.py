@@ -121,7 +121,7 @@ class AdsbError(RuntimeError):
 
 def negara_registrasi(registrasi: str | None, icao24: str | None = None) -> str:
     """Negara dari awalan registrasi (``PK-GPW`` -> Indonesia); cadangan: blok alamat ICAO."""
-    reg = (registrasi or "").strip().upper()
+    reg = registrasi.strip().upper() if isinstance(registrasi, str) else ""
     if reg:
         for awalan in _AWALAN_URUT:
             if reg.startswith(awalan):
