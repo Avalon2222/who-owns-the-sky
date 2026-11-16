@@ -112,6 +112,26 @@ def test_ambil_semua_gabung_dan_lewati_yang_gagal():
     assert "dist/1000" in sesi.url[0]
 
 
+def test_ambil_semua_simpan_posisi_terbaru():
+    lama = {"hex": "8a04d7", "lat": -6.0, "lon": 106.0, "seen_pos": 30.0}
+    baru = {"hex": "8A04D7", "lat": -6.1, "lon": 106.2, "seen_pos": 1.0}
+    sesi = _Sesi([
+        _Respons(200, {"now": 1_700_000_000_000, "ac": [lama]}),
+        _Respons(200, {"now": 1_700_000_002_000, "ac": [baru]}),
+    ])
+    daftar, _, _ = adsb.ambil_semua(titik=[(0, 100), (0, 120)], jeda=0, session=sesi)
+    assert len(daftar) == 1
+    assert daftar[0]["lat"] == -6.1
+
+    # Urutan dibalik: data lama yang datang belakangan tidak menimpa yang baru.
+    sesi = _Sesi([
+        _Respons(200, {"now": 1_700_000_002_000, "ac": [baru]}),
+        _Respons(200, {"now": 1_700_000_000_000, "ac": [lama]}),
+    ])
+    daftar, _, _ = adsb.ambil_semua(titik=[(0, 100), (0, 120)], jeda=0, session=sesi)
+    assert daftar[0]["lat"] == -6.1
+
+
 def test_ambil_semua_semua_gagal():
     sesi = _Sesi([_Respons(429), _Respons(500)])
     with pytest.raises(adsb.AdsbError):

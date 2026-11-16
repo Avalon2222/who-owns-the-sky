@@ -182,11 +182,15 @@ def ambil_semua(
 ) -> tuple[list[dict[str, Any]], int, dict[str, int]]:
     """Memanggil semua lingkaran, menggabungkan pesawat (unik per alamat ICAO).
 
+    Bila satu pesawat terlihat di beberapa lingkaran, yang disimpan adalah data
+    dengan posisi paling baru (``now`` dikurangi ``seen_pos``).
+
     Mengembalikan (daftar pesawat, waktu snapshot unix, info) dengan ``info`` berisi
     jumlah lingkaran yang berhasil dan total. Melempar ``AdsbError`` bila tak satu pun berhasil.
     """
     titik = titik or TITIK_CAKUPAN
     semua: dict[str, dict[str, Any]] = {}
+    waktu_posisi: dict[str, float] = {}
     waktu_ms = 0
     berhasil = 0
     kesalahan: list[str] = []
@@ -199,11 +203,20 @@ def ambil_semua(
             kesalahan.append(str(exc))
             continue
         berhasil += 1
-        waktu_ms = max(waktu_ms, int(data.get("now") or 0))
+        sekarang = int(data.get("now") or 0)
+        waktu_ms = max(waktu_ms, sekarang)
         for ac in data["ac"]:
             hexid = str(ac.get("hex") or "").lower()
-            if hexid and hexid not in semua:
+            if not hexid:
+                continue
+            # Lingkaran saling tumpang tindih: simpan posisi yang paling baru,
+            # bukan sekadar yang kebetulan muncul lebih dulu.
+            umur = ac.get("seen_pos", ac.get("seen"))
+            umur = float(umur) if isinstance(umur, (int, float)) else 0.0
+            posisi = sekarang / 1000 - umur
+            if hexid not in semua or posisi > waktu_posisi[hexid]:
                 semua[hexid] = ac
+                waktu_posisi[hexid] = posisi
     if not berhasil:
         pesan = kesalahan[0] if kesalahan else "tidak ada lingkaran yang dipanggil"
         raise AdsbError(f"Semua {len(titik)} permintaan ke adsb.lol gagal: {pesan}")
