@@ -129,7 +129,8 @@ def hitung_unik(df: pd.DataFrame, kolom: str, n: int | None = None) -> pd.DataFr
     total = df["icao24"].nunique()
     hasil = s.reset_index().rename(columns={"icao24": "pesawat"})
     hasil["persen"] = (hasil["pesawat"] / max(total, 1) * 100).round(1)
-    return hasil.head(n) if n else hasil
+    # n=0 berarti nol baris; hanya None yang berarti tanpa batas.
+    return hasil if n is None else hasil.head(max(n, 0))
 
 
 def ringkasan_kepemilikan(df: pd.DataFrame) -> dict:

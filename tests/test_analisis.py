@@ -293,3 +293,8 @@ def test_bandara_terdekat_titik_tanpa_koordinat(bandara):
     data.loc[data.index[0], ["lat", "lon"]] = [float("nan"), float("nan")]
     hasil = analisis.perkaya(data, bandara)
     assert hasil["bandara_terdekat"].iloc[0] == "-"
+
+
+def test_hitung_unik_n_nol_kosong(df):
+    assert analisis.hitung_unik(df, "negara_asal", n=0).empty
+    assert len(analisis.hitung_unik(df, "negara_asal", n=1)) == 1
