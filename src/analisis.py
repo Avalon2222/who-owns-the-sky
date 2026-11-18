@@ -161,7 +161,10 @@ def grid_kepadatan(df: pd.DataFrame, ukuran_deg: float = 0.5) -> pd.DataFrame:
     """
     if df.empty:
         return pd.DataFrame(columns=["lat_tengah", "lon_tengah", "titik", "pesawat"])
-    g = df.copy()
+    # Posisi tanpa koordinat tidak punya kotak; astype(int) pada NaN akan gagal.
+    g = df.dropna(subset=["lat", "lon"]).copy()
+    if g.empty:
+        return pd.DataFrame(columns=["lat_tengah", "lon_tengah", "titik", "pesawat"])
     g["lat_sel"] = np.floor(g["lat"] / ukuran_deg).astype(int)
     g["lon_sel"] = np.floor(g["lon"] / ukuran_deg).astype(int)
     agg = (
