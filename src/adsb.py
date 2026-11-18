@@ -24,6 +24,7 @@ Catatan:
 from __future__ import annotations
 
 import os
+import re
 import time
 from typing import Any
 
@@ -74,6 +75,7 @@ NEGARA_REGISTRASI: dict[str, str] = {
     "VP-B": "Bermuda", "VQ-B": "Bermuda", "VP-C": "Cayman Islands", "P4": "Aruba",
 }
 _AWALAN_URUT = sorted(NEGARA_REGISTRASI, key=len, reverse=True)
+_REG_TAIWAN = re.compile(r"^B-?\d{5}$")
 
 # Blok alamat ICAO 24-bit (awal, akhir, negara) untuk pesawat tanpa registrasi di payload.
 BLOK_ICAO: list[tuple[int, int, str]] = [
@@ -95,6 +97,7 @@ BLOK_ICAO: list[tuple[int, int, str]] = [
     (0x710000, 0x717FFF, "Saudi Arabia"),
     (0x4B8000, 0x4BFFFF, "Turkey"),
     (0x895000, 0x8953FF, "Brunei"),
+    (0x899000, 0x8993FF, "Taiwan"),
     (0xC00000, 0xC3FFFF, "Canada"),
     (0x3C0000, 0x3FFFFF, "Germany"),
     (0x380000, 0x3BFFFF, "France"),
@@ -122,6 +125,10 @@ class AdsbError(RuntimeError):
 def negara_registrasi(registrasi: str | None, icao24: str | None = None) -> str:
     """Negara dari awalan registrasi (``PK-GPW`` -> Indonesia); cadangan: blok alamat ICAO."""
     reg = registrasi.strip().upper() if isinstance(registrasi, str) else ""
+    # Taiwan juga memakai awalan B-, tapi selalu lima angka (B-18901, B-16701),
+    # sedangkan Tiongkok empat karakter (B-1234, B-30AA).
+    if _REG_TAIWAN.match(reg):
+        return "Taiwan"
     if reg:
         for awalan in _AWALAN_URUT:
             if reg.startswith(awalan):
