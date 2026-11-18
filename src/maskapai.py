@@ -91,7 +91,14 @@ TIDAK_DIKENAL = "Tidak dikenal"
 PENERBANGAN_UMUM = "Registrasi / penerbangan umum"
 
 _POLA_ICAO = re.compile(r"^([A-Z]{3})[0-9][0-9A-Z]{0,4}$")
-_POLA_REGISTRASI = re.compile(r"^(PK|9V|9M|VH|RP|HS|VN|V8|JA|HL|A6|A7|N|B)[- ]?[A-Z0-9]{2,5}$")
+# Registrasi AS selalu N + angka (N123AB) dan Tiongkok/Taiwan B + angka (B-1234),
+# kecuali Hong Kong/Makau (B-HNR, B-MAC). Tanpa batasan ini callsign maskapai yang
+# belum ada di daftar, misalnya BAW12 atau NCA123, ikut dianggap registrasi.
+_POLA_REGISTRASI = re.compile(
+    r"^(?:(?:PK|9V|9M|VH|RP|HS|VN|V8|JA|HL|A6|A7)[- ]?[A-Z0-9]{2,5}"
+    r"|N[1-9][0-9A-Z]{1,4}"
+    r"|B-?[0-9HM][0-9A-Z]{1,4})$"
+)
 
 
 def prefix_callsign(callsign: str | None) -> str | None:
