@@ -277,3 +277,10 @@ def test_fase_terbang_aman_untuk_pd_na():
     assert analisis.fase_terbang(pd.NA, 1.0, False) == "Tidak diketahui"
     assert analisis.fase_terbang(10_000.0, pd.NA, False) == "Jelajah"
     assert analisis.fase_terbang(200.0, pd.NA, False) == "Di darat"
+
+
+def test_grid_kepadatan_melewati_posisi_tanpa_koordinat():
+    df = pd.DataFrame({"lat": [1.1, None, 1.2], "lon": [100.1, 101.0, 100.2], "icao24": ["a", "b", "c"]})
+    grid = analisis.grid_kepadatan(df)
+    assert grid["titik"].sum() == 2
+    assert analisis.grid_kepadatan(df.iloc[[1]]).empty
