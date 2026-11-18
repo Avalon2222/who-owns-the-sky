@@ -71,6 +71,13 @@ def test_bbox_indonesia_masuk_akal():
         ("PK-LQH", maskapai.PENERBANGAN_UMUM),
         ("9VSHA", maskapai.PENERBANGAN_UMUM),
         ("ZZZ999", maskapai.TIDAK_DIKENAL),
+        ("N123AB", maskapai.PENERBANGAN_UMUM),
+        ("B-1234", maskapai.PENERBANGAN_UMUM),
+        ("B-HNR", maskapai.PENERBANGAN_UMUM),
+        # Maskapai yang belum ada di daftar bukan registrasi.
+        ("BAW12", maskapai.TIDAK_DIKENAL),
+        ("NCA123", maskapai.TIDAK_DIKENAL),
+        ("BOX45", maskapai.TIDAK_DIKENAL),
         ("", maskapai.TIDAK_DIKENAL),
         (None, maskapai.TIDAK_DIKENAL),
         (float("nan"), maskapai.TIDAK_DIKENAL),
