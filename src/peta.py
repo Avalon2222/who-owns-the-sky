@@ -126,7 +126,7 @@ def tambah_bandara(m: folium.Map, bandara: pd.DataFrame, nama_lapisan: str = "Ba
             fill=True,
             fill_color="#ffffff",
             fill_opacity=0.8,
-            tooltip=f"{b['kode']} · {b['nama']} ({b['kota']})",
+            tooltip=html.escape(f"{b['kode']} · {b['nama']} ({b['kota']})"),
         ).add_to(fg)
     fg.add_to(m)
 
@@ -149,7 +149,7 @@ def peta_pesawat(
         marker = folium.Marker(
             location=(b["lat"], b["lon"]),
             icon=ikon_pesawat(warna, b.get("arah")),
-            tooltip=f"{b.get('callsign') or b.get('icao24')} · {b.get('maskapai', '')}",
+            tooltip=html.escape(f"{b.get('callsign') or b.get('icao24')} · {b.get('maskapai', '')}"),
             popup=folium.Popup(popup_pesawat(b), max_width=320),
         )
         marker.add_to(fg_indo if b.get("negara_asal") == "Indonesia" else fg_asing)
