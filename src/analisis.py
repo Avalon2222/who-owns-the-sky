@@ -61,9 +61,10 @@ def fase_terbang(alt_m: float | None, laju_vertikal: float | None, di_darat: boo
     """
     if di_darat:
         return "Di darat"
-    if alt_m is None or (isinstance(alt_m, float) and math.isnan(alt_m)):
+    # pd.isna menangkap None, NaN, dan pd.NA (kolom Float64 nullable); pd.NA < 300 melempar TypeError.
+    if pd.isna(alt_m):
         return "Tidak diketahui"
-    lv = 0.0 if laju_vertikal is None or (isinstance(laju_vertikal, float) and math.isnan(laju_vertikal)) else laju_vertikal
+    lv = 0.0 if pd.isna(laju_vertikal) else float(laju_vertikal)
     if alt_m < 300 and abs(lv) < 2.5:
         return "Di darat"
     if lv > 2.5:
