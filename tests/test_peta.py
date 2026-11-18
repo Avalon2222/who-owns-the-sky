@@ -19,3 +19,13 @@ def test_tooltip_pesawat_dan_bandara_di_escape():
     assert "<b>X</b>" not in teks
     assert "<i>Soetta</i>" not in teks
     assert "&lt;b&gt;X&lt;/b&gt;" in teks
+
+
+def test_popup_aman_untuk_callsign_nan_dan_pd_na():
+    b = pd.Series({
+        "icao24": "8a0001", "callsign": float("nan"), "maskapai": "Garuda Indonesia",
+        "negara_asal": "Indonesia", "fase": "Jelajah", "alt_baro_m": pd.NA, "kecepatan_kmh": 800.0,
+    })
+    teks = peta.popup_pesawat(b)
+    assert "(tanpa callsign)" in teks
+    assert "<td>Ketinggian</td><td>- (-)</td>" in teks
