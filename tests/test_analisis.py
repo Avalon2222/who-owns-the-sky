@@ -271,3 +271,9 @@ def test_warna_kelompok_negara():
     assert peta.kelompok_negara("Peru") == peta.KELOMPOK_LAIN
     assert peta.warna_negara("Indonesia") == "#f2b705"
     assert peta.warna_negara(None) == peta.WARNA_KELOMPOK[peta.KELOMPOK_LAIN]
+
+
+def test_fase_terbang_aman_untuk_pd_na():
+    assert analisis.fase_terbang(pd.NA, 1.0, False) == "Tidak diketahui"
+    assert analisis.fase_terbang(10_000.0, pd.NA, False) == "Jelajah"
+    assert analisis.fase_terbang(200.0, pd.NA, False) == "Di darat"
