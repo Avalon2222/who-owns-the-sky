@@ -77,6 +77,9 @@ def fase_terbang(alt_m: float | None, laju_vertikal: float | None, di_darat: boo
 def bandara_terdekat(lat: float, lon: float, bandara: pd.DataFrame) -> tuple[str, float]:
     """Kode bandara terdekat dan jaraknya (km) dari sebuah titik."""
     jarak = haversine_vektor(bandara["lat"], bandara["lon"], lat, lon)
+    # Titik tanpa koordinat membuat semua jarak NaN; idxmin lalu melempar ValueError.
+    if jarak.isna().all():
+        return "-", float("nan")
     i = jarak.idxmin()
     return str(bandara.loc[i, "kode"]), float(jarak.loc[i])
 

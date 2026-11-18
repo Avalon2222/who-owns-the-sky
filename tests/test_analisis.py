@@ -284,3 +284,12 @@ def test_grid_kepadatan_melewati_posisi_tanpa_koordinat():
     grid = analisis.grid_kepadatan(df)
     assert grid["titik"].sum() == 2
     assert analisis.grid_kepadatan(df.iloc[[1]]).empty
+
+
+def test_bandara_terdekat_titik_tanpa_koordinat(bandara):
+    kode, jarak = analisis.bandara_terdekat(float("nan"), float("nan"), bandara)
+    assert kode == "-" and math.isnan(jarak)
+    data = opensky.states_ke_dataframe(PAYLOAD).head(1).copy()
+    data.loc[data.index[0], ["lat", "lon"]] = [float("nan"), float("nan")]
+    hasil = analisis.perkaya(data, bandara)
+    assert hasil["bandara_terdekat"].iloc[0] == "-"
