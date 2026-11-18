@@ -72,14 +72,18 @@ def ikon_pesawat(warna: str, arah: float | None, ukuran: int = 22) -> folium.Div
 
 
 def _teks(v, satuan: str = "", desimal: int = 0) -> str:
-    if v is None or (isinstance(v, float) and pd.isna(v)):
+    # pd.isna juga menangkap pd.NA dan NaT, bukan hanya NaN float.
+    if v is None or pd.isna(v):
         return "-"
     return f"{v:,.{desimal}f}{satuan}"
 
 
 def popup_pesawat(b: pd.Series) -> str:
     """HTML popup untuk satu baris pesawat."""
-    callsign = html.escape(b.get("callsign") or "(tanpa callsign)")
+    cs = b.get("callsign")
+    # Callsign bisa NaN (float) dari CSV; NaN bernilai "benar" sehingga lolos dari `or`.
+    cs = cs.strip() if isinstance(cs, str) else ""
+    callsign = html.escape(cs or "(tanpa callsign)")
     maskapai = html.escape(str(b.get("maskapai", "")))
     negara = html.escape(str(b.get("negara_asal", "")))
     fase = html.escape(str(b.get("fase", "")))
