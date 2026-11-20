@@ -298,3 +298,9 @@ def test_bandara_terdekat_titik_tanpa_koordinat(bandara):
 def test_hitung_unik_n_nol_kosong(df):
     assert analisis.hitung_unik(df, "negara_asal", n=0).empty
     assert len(analisis.hitung_unik(df, "negara_asal", n=1)) == 1
+
+
+def test_label_lokasi_tanpa_koordinat():
+    bandara = pd.DataFrame({"kode": ["CGK"], "kota": ["Jakarta"], "lat": [-6.1256], "lon": [106.6559]})
+    assert analisis.label_lokasi(float("nan"), float("nan"), bandara) == "Lokasi tidak diketahui"
+    assert analisis.label_lokasi(-6.13, 106.66, bandara) == "Sekitar Jakarta (CGK)"

@@ -188,6 +188,8 @@ def grid_kepadatan(df: pd.DataFrame, ukuran_deg: float = 0.5) -> pd.DataFrame:
 def label_lokasi(lat: float, lon: float, bandara: pd.DataFrame) -> str:
     """Label ramah untuk sebuah koordinat: nama bandara terdekat beserta jaraknya."""
     kode, jarak = bandara_terdekat(lat, lon, bandara)
+    if kode == "-":  # titik tanpa koordinat: tidak ada bandara yang bisa dicari
+        return "Lokasi tidak diketahui"
     baris = bandara.loc[bandara["kode"] == kode].iloc[0]
     if jarak < 40:
         return f"Sekitar {baris['kota']} ({kode})"
