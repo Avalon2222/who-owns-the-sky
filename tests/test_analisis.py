@@ -310,3 +310,16 @@ def test_label_lokasi_tanpa_koordinat():
 def test_fase_terbang_status_darat_kosong(di_darat):
     assert analisis.fase_terbang(11000, 0.0, di_darat) == "Jelajah"
     assert analisis.fase_terbang(2000, 8.0, di_darat) == "Naik"
+
+
+def test_panjang_jejak_melewati_posisi_tanpa_koordinat():
+    jejak = pd.DataFrame({
+        "icao24": ["a"] * 3 + ["b"] * 2, "waktu_snapshot": [1, 2, 3, 1, 2],
+        "lat": [-6.0, float("nan"), -6.1, -7.0, float("nan")], "lon": [106.0, 106.05, 106.0, 110.0, 110.0],
+        "callsign": ["GIA1"] * 3 + ["LNI2"] * 2, "maskapai": ["Garuda"] * 3 + ["Lion"] * 2,
+    })
+    hasil = analisis.panjang_jejak_km(jejak)
+    # b hanya punya satu posisi valid, jadi tidak ikut; a = satu segmen ~11,1 km, bukan 0 km.
+    assert hasil["icao24"].tolist() == ["a"]
+    assert hasil.iloc[0]["segmen"] == 1
+    assert hasil.iloc[0]["km"] == pytest.approx(11.1, abs=0.1)

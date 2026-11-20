@@ -247,10 +247,13 @@ def panjang_jejak_km(jejak: pd.DataFrame) -> pd.DataFrame:
     j = jejak.sort_values(["icao24", "waktu_snapshot"])
     hasil = []
     for icao, grup in j.groupby("icao24"):
-        if len(grup) < 2:
+        # Posisi tanpa koordinat dilewati; haversine_km menjepit NaN jadi 0 km sehingga
+        # segmen yang melewatinya diam-diam hilang dari total.
+        posisi = grup.dropna(subset=["lat", "lon"])
+        if len(posisi) < 2:
             continue
-        lat = grup["lat"].to_numpy()
-        lon = grup["lon"].to_numpy()
+        lat = posisi["lat"].to_numpy(dtype=float)
+        lon = posisi["lon"].to_numpy(dtype=float)
         km = sum(haversine_km(lat[i], lon[i], lat[i + 1], lon[i + 1]) for i in range(len(lat) - 1))
         # Callsign kadang kosong di sebagian snapshot; pakai yang terakhir terisi.
         terisi = grup["callsign"].fillna("").astype(str).str.strip() != ""
@@ -259,7 +262,7 @@ def panjang_jejak_km(jejak: pd.DataFrame) -> pd.DataFrame:
             "icao24": icao,
             "callsign": terakhir["callsign"],
             "maskapai": terakhir["maskapai"] if "maskapai" in grup else "",
-            "segmen": len(grup) - 1,
+            "segmen": len(posisi) - 1,
             "km": round(km, 1),
         })
     return (
