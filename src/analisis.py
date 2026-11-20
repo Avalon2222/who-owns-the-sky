@@ -214,7 +214,10 @@ def bandara_tersibuk(
     kolom = ["kode", "nama", "kota", "negara", "pesawat"]
     if df.empty or bandara.empty:
         return pd.DataFrame(columns=kolom)
-    rendah = df[(df["alt_baro_m"].fillna(0) < alt_maks_m) | df["di_darat"]].copy()
+    # Ketinggian kosong bukan berarti rendah: hanya posisi yang jelas di bawah ambang atau
+    # jelas di darat yang dihitung. di_darat kosong (NaN/None) dianggap False.
+    di_darat = df["di_darat"].map(lambda v: v is True or (not pd.isna(v) and bool(v))).astype(bool)
+    rendah = df[(pd.to_numeric(df["alt_baro_m"], errors="coerce") < alt_maks_m) | di_darat].copy()
     if rendah.empty:
         return pd.DataFrame(columns=kolom)
     if "bandara_terdekat" not in rendah or "jarak_bandara_km" not in rendah:

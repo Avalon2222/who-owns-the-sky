@@ -323,3 +323,17 @@ def test_panjang_jejak_melewati_posisi_tanpa_koordinat():
     assert hasil["icao24"].tolist() == ["a"]
     assert hasil.iloc[0]["segmen"] == 1
     assert hasil.iloc[0]["km"] == pytest.approx(11.1, abs=0.1)
+
+
+def test_bandara_tersibuk_ketinggian_kosong_bukan_rendah():
+    bandara = pd.DataFrame({
+        "kode": ["CGK", "DPS"], "nama": ["Soekarno-Hatta", "Ngurah Rai"], "kota": ["Jakarta", "Denpasar"],
+        "negara": ["Indonesia"] * 2, "lat": [-6.1256, -8.7482], "lon": [106.6559, 115.1672],
+    })
+    df = pd.DataFrame({
+        "icao24": ["a", "b", "c"], "alt_baro_m": [200.0, None, None], "di_darat": [False, None, True],
+        "lat": [-6.13, -8.75, -8.74], "lon": [106.66, 115.17, 115.16],
+    })
+    hasil = analisis.bandara_tersibuk(df, bandara).set_index("kode")["pesawat"].to_dict()
+    # b tidak diketahui ketinggiannya dan tidak di darat, jadi tidak dihitung; c di darat tetap dihitung.
+    assert hasil == {"CGK": 1, "DPS": 1}
