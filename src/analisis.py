@@ -59,7 +59,8 @@ def fase_terbang(alt_m: float | None, laju_vertikal: float | None, di_darat: boo
     >>> fase_terbang(None, None, True)
     'Di darat'
     """
-    if di_darat:
+    # di_darat bisa NaN (truthy!) atau pd.NA (bool() melempar TypeError) di jejak CSV.
+    if di_darat is True or (not pd.isna(di_darat) and bool(di_darat)):
         return "Di darat"
     # pd.isna menangkap None, NaN, dan pd.NA (kolom Float64 nullable); pd.NA < 300 melempar TypeError.
     if pd.isna(alt_m):

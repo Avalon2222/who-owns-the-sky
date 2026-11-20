@@ -304,3 +304,9 @@ def test_label_lokasi_tanpa_koordinat():
     bandara = pd.DataFrame({"kode": ["CGK"], "kota": ["Jakarta"], "lat": [-6.1256], "lon": [106.6559]})
     assert analisis.label_lokasi(float("nan"), float("nan"), bandara) == "Lokasi tidak diketahui"
     assert analisis.label_lokasi(-6.13, 106.66, bandara) == "Sekitar Jakarta (CGK)"
+
+
+@pytest.mark.parametrize("di_darat", [float("nan"), pd.NA, None])
+def test_fase_terbang_status_darat_kosong(di_darat):
+    assert analisis.fase_terbang(11000, 0.0, di_darat) == "Jelajah"
+    assert analisis.fase_terbang(2000, 8.0, di_darat) == "Naik"
