@@ -180,3 +180,10 @@ def test_ambil_semua_seen_pos_null_pakai_seen():
     ])
     daftar, _, _ = adsb.ambil_semua(titik=[(0, 100), (0, 120)], jeda=0, session=sesi)
     assert daftar[0]["lat"] == -6.1
+
+
+def test_ac_ke_dataframe_seen_pos_null_pakai_seen():
+    df = adsb.ac_ke_dataframe(
+        [{"hex": "8a04d7", "lat": -6.0, "lon": 106.0, "seen_pos": None, "seen": 40}], 1_700_000_000
+    )
+    assert df.loc[0, "waktu_posisi"] == 1_700_000_000 - 40
