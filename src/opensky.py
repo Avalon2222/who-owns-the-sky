@@ -101,10 +101,17 @@ def header_otorisasi(session: requests.Session | None = None, timeout: float | t
         if resp.status_code != 200:
             return {}
         data = resp.json()
+        if not isinstance(data, dict):
+            return {}
         token = data.get("access_token")
         if not token:
             return {}
-        _TOKEN.update(token=token, kedaluwarsa=time.time() + float(data.get("expires_in", 1800)))
+        # expires_in bisa null atau teks aneh; float(None) melempar TypeError yang tidak tertangkap.
+        try:
+            umur = float(data.get("expires_in") or 1800)
+        except (TypeError, ValueError):
+            umur = 1800.0
+        _TOKEN.update(token=token, kedaluwarsa=time.time() + umur)
         return {"Authorization": f"Bearer {token}"}
     except (requests.RequestException, ValueError):
         return {}

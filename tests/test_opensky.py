@@ -67,3 +67,17 @@ def test_token_gagal_tetap_anonim(monkeypatch):
     sesi = _Sesi(token_status=401)
     opensky.ambil_states(session=sesi)
     assert "headers" not in sesi.get_kwargs
+
+
+class _SesiTokenAneh(_Sesi):
+    def post(self, url, data=None, timeout=None):
+        self.post_dipanggil += 1
+        return _Respons(200, {"access_token": "tok456", "expires_in": None})
+
+
+def test_expires_in_null_tetap_memakai_token(monkeypatch):
+    monkeypatch.setenv("OPENSKY_CLIENT_ID", "abc")
+    monkeypatch.setenv("OPENSKY_CLIENT_SECRET", "rahasia")
+    sesi = _SesiTokenAneh()
+    opensky.ambil_states(session=sesi)
+    assert sesi.get_kwargs["headers"] == {"Authorization": "Bearer tok456"}
