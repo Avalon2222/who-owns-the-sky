@@ -337,3 +337,10 @@ def test_bandara_tersibuk_ketinggian_kosong_bukan_rendah():
     hasil = analisis.bandara_tersibuk(df, bandara).set_index("kode")["pesawat"].to_dict()
     # b tidak diketahui ketinggiannya dan tidak di darat, jadi tidak dihitung; c di darat tetap dihitung.
     assert hasil == {"CGK": 1, "DPS": 1}
+
+
+def test_hitung_unik_nilai_kosong_tetap_terhitung():
+    df = pd.DataFrame({"icao24": ["a", "b", "c"], "negara_asal": ["Indonesia", None, float("nan")]})
+    hasil = analisis.hitung_unik(df, "negara_asal")
+    assert hasil["pesawat"].sum() == 3
+    assert hasil.set_index("negara_asal").loc["Tidak diketahui", "pesawat"] == 2
