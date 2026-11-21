@@ -168,3 +168,15 @@ def test_muat_live_jatuh_ke_sampel(monkeypatch):
 ])
 def test_sumber_posisi(tipe, kode):
     assert adsb._sumber_posisi(tipe) == kode
+
+
+def test_ambil_semua_seen_pos_null_pakai_seen():
+    # seen_pos null tapi seen 50 detik: posisinya lama dan tidak boleh menimpa yang baru.
+    basi = {"hex": "8a04d7", "lat": -6.0, "lon": 106.0, "seen_pos": None, "seen": 50.0}
+    baru = {"hex": "8a04d7", "lat": -6.1, "lon": 106.2, "seen_pos": 5.0}
+    sesi = _Sesi([
+        _Respons(200, {"now": 1_700_000_000_000, "ac": [baru]}),
+        _Respons(200, {"now": 1_700_000_000_000, "ac": [basi]}),
+    ])
+    daftar, _, _ = adsb.ambil_semua(titik=[(0, 100), (0, 120)], jeda=0, session=sesi)
+    assert daftar[0]["lat"] == -6.1

@@ -218,7 +218,10 @@ def ambil_semua(
                 continue
             # Lingkaran saling tumpang tindih: simpan posisi yang paling baru,
             # bukan sekadar yang kebetulan muncul lebih dulu.
-            umur = ac.get("seen_pos", ac.get("seen"))
+            # seen_pos bisa ada tapi null; saat itu pakai seen, bukan langsung dianggap 0 detik.
+            umur = ac.get("seen_pos")
+            if not isinstance(umur, (int, float)):
+                umur = ac.get("seen")
             umur = float(umur) if isinstance(umur, (int, float)) else 0.0
             posisi = sekarang / 1000 - umur
             if hexid not in semua or posisi > waktu_posisi[hexid]:
