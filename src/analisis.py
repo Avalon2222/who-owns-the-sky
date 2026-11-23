@@ -167,10 +167,13 @@ def grid_kepadatan(df: pd.DataFrame, ukuran_deg: float = 0.5) -> pd.DataFrame:
     ``titik`` = jumlah posisi (semua snapshot), ``pesawat`` = icao24 unik.
     Ukuran 0,5 derajat kira-kira 55 km di khatulistiwa.
     """
+    if not (ukuran_deg > 0 and math.isfinite(ukuran_deg)):
+        raise ValueError(f"ukuran_deg harus bilangan positif, bukan {ukuran_deg!r}")
     if df.empty:
         return pd.DataFrame(columns=["lat_tengah", "lon_tengah", "titik", "pesawat"])
-    # Posisi tanpa koordinat tidak punya kotak; astype(int) pada NaN akan gagal.
-    g = df.dropna(subset=["lat", "lon"]).copy()
+    # Posisi tanpa koordinat (termasuk inf dari data rusak) tidak punya kotak; astype(int) akan gagal.
+    koordinat = df[["lat", "lon"]].apply(pd.to_numeric, errors="coerce")
+    g = df[np.isfinite(koordinat).all(axis=1)].copy()
     if g.empty:
         return pd.DataFrame(columns=["lat_tengah", "lon_tengah", "titik", "pesawat"])
     g["lat_sel"] = np.floor(g["lat"] / ukuran_deg).astype(int)

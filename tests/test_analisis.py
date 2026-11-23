@@ -358,3 +358,12 @@ def test_hitung_unik_jumlah_seri_urut_abjad():
     hasil = analisis.hitung_unik(_pesawat_seri(), "negara_asal")
     teratas = hasil[hasil["pesawat"] == 3]["negara_asal"].tolist()
     assert teratas == sorted(teratas)
+
+
+def test_grid_kepadatan_koordinat_tak_hingga_dan_ukuran_nol():
+    df = _pesawat_seri()
+    df.loc[0, "lat"] = float("inf")
+    hasil = analisis.grid_kepadatan(df)
+    assert hasil["titik"].sum() == len(df) - 1
+    with pytest.raises(ValueError):
+        analisis.grid_kepadatan(df, ukuran_deg=0)
