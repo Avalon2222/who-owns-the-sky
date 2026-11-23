@@ -344,3 +344,17 @@ def test_hitung_unik_nilai_kosong_tetap_terhitung():
     hasil = analisis.hitung_unik(df, "negara_asal")
     assert hasil["pesawat"].sum() == 3
     assert hasil.set_index("negara_asal").loc["Tidak diketahui", "pesawat"] == 2
+
+
+def _pesawat_seri() -> pd.DataFrame:
+    baris = []
+    for i in range(60):
+        for k in range(i % 3 + 1):
+            baris.append({"icao24": f"{i:02d}{k}", "negara_asal": f"N{i:02d}", "lat": 1.0, "lon": 100.0})
+    return pd.DataFrame(baris)
+
+
+def test_hitung_unik_jumlah_seri_urut_abjad():
+    hasil = analisis.hitung_unik(_pesawat_seri(), "negara_asal")
+    teratas = hasil[hasil["pesawat"] == 3]["negara_asal"].tolist()
+    assert teratas == sorted(teratas)
