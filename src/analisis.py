@@ -240,7 +240,8 @@ def bandara_tersibuk(
     hasil["pesawat"] = hasil["kode"].map(hitung).fillna(0).astype(int)
     return (
         hasil[hasil["pesawat"] > 0]
-        .sort_values("pesawat", ascending=False)
+        # Bandara dengan jumlah sama diurutkan menurut kode supaya tabel tidak berganti urutan.
+        .sort_values(["pesawat", "kode"], ascending=[False, True], kind="mergesort")
         .reset_index(drop=True)
     )
 
