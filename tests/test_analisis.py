@@ -55,8 +55,8 @@ def test_states_kosong_menghasilkan_dataframe_kosong_dengan_kolom():
 
 def test_bbox_indonesia_masuk_akal():
     b = opensky.BBOX_INDONESIA
-    assert b["lamin"] < -10 < 6 < b["lamax"]
-    assert b["lomin"] < 95 < 141 < b["lomax"]
+    assert b["lamin"] < -10 and b["lamax"] > 6
+    assert b["lomin"] < 95 and b["lomax"] > 141
 
 
 # ---------------------------------------------------------------- maskapai
