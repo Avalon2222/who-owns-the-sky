@@ -128,7 +128,8 @@ def hitung_unik(df: pd.DataFrame, kolom: str, n: int | None = None) -> pd.DataFr
         return pd.DataFrame(columns=[kolom, "pesawat", "persen"])
     # groupby membuang NaN; pesawat tanpa nilai (mis. negara kosong) diberi label agar tetap terhitung.
     kunci = df[kolom].astype("object").where(df[kolom].notna(), "Tidak diketahui")
-    s = df.assign(**{kolom: kunci}).groupby(kolom)["icao24"].nunique().sort_values(ascending=False)
+    # mergesort: nilai dengan jumlah sama tetap urut abjad (urutan groupby), tidak acak.
+    s = df.assign(**{kolom: kunci}).groupby(kolom)["icao24"].nunique().sort_values(ascending=False, kind="mergesort")
     total = df["icao24"].nunique()
     hasil = s.reset_index().rename(columns={"icao24": "pesawat"})
     hasil["persen"] = (hasil["pesawat"] / max(total, 1) * 100).round(1)
