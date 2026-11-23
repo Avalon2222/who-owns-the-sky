@@ -53,7 +53,7 @@ def info_sampel(df: pd.DataFrame) -> dict:
         "mulai": df["waktu"].min(),
         "selesai": df["waktu"].max(),
         "pesawat": int(df["icao24"].nunique()),
-        "baris": int(len(df)),
+        "baris": len(df),
     }
 
 
