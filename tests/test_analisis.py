@@ -367,3 +367,20 @@ def test_grid_kepadatan_koordinat_tak_hingga_dan_ukuran_nol():
     assert hasil["titik"].sum() == len(df) - 1
     with pytest.raises(ValueError):
         analisis.grid_kepadatan(df, ukuran_deg=0)
+
+
+def test_bandara_tersibuk_jumlah_seri_urut_kode():
+    bandara = pd.DataFrame({
+        "kode": [f"B{i:02d}" for i in range(60)][::-1],
+        "nama": "x", "kota": "x", "negara": "x",
+        "lat": [float(i) for i in range(60)][::-1], "lon": 100.0,
+    })
+    baris = []
+    for i in range(60):
+        for k in range(i % 3 + 1):
+            baris.append({"icao24": f"{i:02d}{k}", "lat": float(i), "lon": 100.0,
+                          "alt_baro_m": 500.0, "di_darat": False})
+    hasil = analisis.bandara_tersibuk(pd.DataFrame(baris), bandara)
+    tiga = hasil[hasil["pesawat"] == 3]["kode"].tolist()
+    assert len(tiga) == 20
+    assert tiga == sorted(tiga)
