@@ -258,10 +258,12 @@ def ac_ke_dataframe(daftar: list[dict[str, Any]], waktu_snapshot: int,
         rate = ac.get("baro_rate")
         if not isinstance(rate, (int, float)):
             rate = ac.get("geom_rate")
-        seen = ac.get("seen") or 0
+        # Umur yang bukan angka (null, teks aneh) disamakan dengan ambil_semua: float() langsung akan gagal.
+        seen = ac.get("seen")
+        seen = float(seen) if isinstance(seen, (int, float)) and not isinstance(seen, bool) else 0.0
         # seen_pos null berarti umur posisi tidak dilaporkan; pakai seen, bukan 0 (seolah baru).
         seen_pos = ac.get("seen_pos")
-        if seen_pos is None:
+        if not isinstance(seen_pos, (int, float)) or isinstance(seen_pos, bool):
             seen_pos = seen
         icao24 = str(ac.get("hex") or "").lower()
         baris.append({
