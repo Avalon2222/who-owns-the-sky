@@ -39,6 +39,8 @@ def muat_sampel(path: Path = FILE_SAMPEL) -> pd.DataFrame:
     if hilang:
         raise ValueError(f"Kolom sampel hilang: {sorted(hilang)}")
     df["callsign"] = df["callsign"].fillna("").astype(str).str.strip()
+    # Data live selalu memakai hex huruf kecil; "7C1234" dan "7c1234 " harus dihitung satu pesawat.
+    df["icao24"] = df["icao24"].str.strip().str.lower()
     df["di_darat"] = df["di_darat"].fillna(False).astype(bool)
     df["waktu"] = pd.to_datetime(df["waktu_snapshot"], unit="s", utc=True)
     return df.dropna(subset=["lat", "lon"]).reset_index(drop=True)
