@@ -397,3 +397,19 @@ def test_panjang_jejak_lewati_koordinat_tak_hingga():
     hasil = analisis.panjang_jejak_km(jejak)
     assert hasil.loc[0, "segmen"] == 1
     assert hasil.loc[0, "km"] == pytest.approx(111.2, abs=0.5)
+
+
+def test_muat_sampel_icao24_disamakan_huruf_kecil(tmp_path):
+    path = tmp_path / "snap.csv"
+    pd.DataFrame({
+        "icao24": ["7C1234", " 7c1234", "8a0001"],
+        "callsign": ["QFA1", "QFA1", "GIA2"],
+        "negara_asal": ["Australia", "Australia", "Indonesia"],
+        "lat": [-6.0, -6.1, -7.0],
+        "lon": [106.0, 106.1, 110.0],
+        "waktu_snapshot": [1, 2, 2],
+        "di_darat": [False, False, False],
+    }).to_csv(path, index=False)
+    df = muat_data.muat_sampel(path)
+    assert df["icao24"].tolist() == ["7c1234", "7c1234", "8a0001"]
+    assert muat_data.info_sampel(df)["pesawat"] == 2
