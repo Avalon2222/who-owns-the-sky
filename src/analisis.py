@@ -259,7 +259,9 @@ def panjang_jejak_km(jejak: pd.DataFrame) -> pd.DataFrame:
     for icao, grup in j.groupby("icao24"):
         # Posisi tanpa koordinat dilewati; haversine_km menjepit NaN jadi 0 km sehingga
         # segmen yang melewatinya diam-diam hilang dari total.
-        posisi = grup.dropna(subset=["lat", "lon"])
+        # Koordinat tak hingga (data rusak) juga dilewati, kalau tidak total km-nya ikut NaN.
+        koordinat = grup[["lat", "lon"]].apply(pd.to_numeric, errors="coerce")
+        posisi = grup[np.isfinite(koordinat).all(axis=1)]
         if len(posisi) < 2:
             continue
         lat = posisi["lat"].to_numpy(dtype=float)
