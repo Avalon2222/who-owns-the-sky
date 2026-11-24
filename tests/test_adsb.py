@@ -187,3 +187,11 @@ def test_ac_ke_dataframe_seen_pos_null_pakai_seen():
         [{"hex": "8a04d7", "lat": -6.0, "lon": 106.0, "seen_pos": None, "seen": 40}], 1_700_000_000
     )
     assert df.loc[0, "waktu_posisi"] == 1_700_000_000 - 40
+
+
+def test_ac_ke_dataframe_umur_bukan_angka_tidak_gagal():
+    daftar = [{"hex": "8a0001", "lat": -6.2, "lon": 106.8, "seen": 4, "seen_pos": "?"},
+              {"hex": "8a0002", "lat": -6.3, "lon": 106.9, "seen": "x"}]
+    df = adsb.ac_ke_dataframe(daftar, 1_000)
+    assert df.set_index("icao24").loc["8a0001", "waktu_posisi"] == 996
+    assert df.set_index("icao24").loc["8a0002", "waktu_kontak"] == 1_000
