@@ -384,3 +384,16 @@ def test_bandara_tersibuk_jumlah_seri_urut_kode():
     tiga = hasil[hasil["pesawat"] == 3]["kode"].tolist()
     assert len(tiga) == 20
     assert tiga == sorted(tiga)
+
+
+def test_panjang_jejak_lewati_koordinat_tak_hingga():
+    jejak = pd.DataFrame({
+        "icao24": ["a"] * 3,
+        "callsign": ["GIA1"] * 3,
+        "waktu_snapshot": [1, 2, 3],
+        "lat": [0.0, float("inf"), 0.0],
+        "lon": [100.0, 100.5, 101.0],
+    })
+    hasil = analisis.panjang_jejak_km(jejak)
+    assert hasil.loc[0, "segmen"] == 1
+    assert hasil.loc[0, "km"] == pytest.approx(111.2, abs=0.5)
