@@ -413,3 +413,17 @@ def test_muat_sampel_icao24_disamakan_huruf_kecil(tmp_path):
     df = muat_data.muat_sampel(path)
     assert df["icao24"].tolist() == ["7c1234", "7c1234", "8a0001"]
     assert muat_data.info_sampel(df)["pesawat"] == 2
+
+
+def test_panjang_jejak_jarak_sama_urut_icao24():
+    baris = []
+    for i in range(60):
+        for t in range(2):
+            baris.append({
+                "icao24": f"{i:06x}", "waktu_snapshot": t, "lat": float(t * (i % 3)), "lon": 100.0,
+                "callsign": "X", "maskapai": "m",
+            })
+    hasil = analisis.panjang_jejak_km(pd.DataFrame(baris))
+    for _, grup in hasil.groupby("km", sort=False):
+        assert grup["icao24"].tolist() == sorted(grup["icao24"])
+    assert hasil["km"].is_monotonic_decreasing
