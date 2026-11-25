@@ -36,3 +36,11 @@ def test_heatmap_membuang_koordinat_inf():
     teks = _html(peta.peta_heatmap(jejak))
     assert "Infinity" not in teks
     assert "[-6.1, 106.6]" in teks
+
+
+def test_popup_tanpa_bandara_tidak_tampil_nan():
+    for kosong in (float("nan"), "-"):
+        teks = peta.popup_pesawat(pd.Series({"callsign": "GIA1", "bandara_terdekat": kosong, "jarak_bandara_km": float("nan")}))
+        assert "Bandara terdekat" not in teks
+    teks = peta.popup_pesawat(pd.Series({"callsign": "GIA1", "bandara_terdekat": "CGK", "jarak_bandara_km": 12.0}))
+    assert "CGK (12 km)" in teks

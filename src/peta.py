@@ -89,6 +89,9 @@ def popup_pesawat(b: pd.Series) -> str:
     negara = html.escape(str(b.get("negara_asal", "")))
     fase = html.escape(str(b.get("fase", "")))
     bandara = b.get("bandara_terdekat")
+    # NaN itu truthy dan "-" berarti tidak ada bandara; keduanya tidak perlu baris "nan (-)".
+    if not isinstance(bandara, str) or bandara.strip() in {"", "-"}:
+        bandara = None
     baris_bandara = (
         f"<tr><td>Bandara terdekat</td><td>{html.escape(str(bandara))} ({_teks(b.get('jarak_bandara_km'), ' km')})</td></tr>"
         if bandara else ""
