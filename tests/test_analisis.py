@@ -427,3 +427,14 @@ def test_panjang_jejak_jarak_sama_urut_icao24():
     for _, grup in hasil.groupby("km", sort=False):
         assert grup["icao24"].tolist() == sorted(grup["icao24"])
     assert hasil["km"].is_monotonic_decreasing
+
+
+def test_negara_teratas_bukan_tidak_diketahui():
+    df = pd.DataFrame({
+        "icao24": ["a1", "a2", "a3", "a4"],
+        "negara_asal": [None, None, None, "Singapore"],
+        "maskapai": ["Tidak dikenal"] * 4,
+    })
+    r = analisis.ringkasan_kepemilikan(df)
+    assert r["negara_teratas"] == "Singapore"
+    assert r["total"] == 4
