@@ -279,6 +279,7 @@ def panjang_jejak_km(jejak: pd.DataFrame) -> pd.DataFrame:
         })
     return (
         pd.DataFrame(hasil, columns=["icao24", "callsign", "maskapai", "segmen", "km"])
-        .sort_values("km", ascending=False)
+        # Banyak pesawat parkir sama-sama 0,0 km; jarak sama diurutkan menurut icao24 supaya tabel stabil.
+        .sort_values(["km", "icao24"], ascending=[False, True], kind="mergesort")
         .reset_index(drop=True)
     )
