@@ -29,3 +29,10 @@ def test_popup_aman_untuk_callsign_nan_dan_pd_na():
     teks = peta.popup_pesawat(b)
     assert "(tanpa callsign)" in teks
     assert "<td>Ketinggian</td><td>- (-)</td>" in teks
+
+
+def test_heatmap_membuang_koordinat_inf():
+    jejak = pd.DataFrame({"lat": [-6.1, float("inf"), -7.0], "lon": [106.6, 107.0, float("-inf")]})
+    teks = _html(peta.peta_heatmap(jejak))
+    assert "Infinity" not in teks
+    assert "[-6.1, 106.6]" in teks

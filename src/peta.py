@@ -5,6 +5,7 @@ from __future__ import annotations
 import html
 
 import folium
+import numpy as np
 import pandas as pd
 from folium.plugins import HeatMap
 
@@ -177,7 +178,9 @@ def peta_heatmap(
     if bandara is not None and not bandara.empty:
         tambah_bandara(m, bandara)
 
-    titik = jejak[["lat", "lon"]].dropna().to_numpy().tolist()
+    # Koordinat inf lolos dari dropna dan tertulis sebagai "Infinity" di JavaScript peta; buang juga.
+    koordinat = jejak[["lat", "lon"]].apply(pd.to_numeric, errors="coerce")
+    titik = koordinat[np.isfinite(koordinat).all(axis=1)].to_numpy().tolist()
     if titik:
         HeatMap(
             titik,
