@@ -147,7 +147,8 @@ def ringkasan_kepemilikan(df: pd.DataFrame) -> dict:
         }
     total = df["icao24"].nunique()
     indo = df.loc[df["negara_asal"] == "Indonesia", "icao24"].nunique()
-    negara = hitung_unik(df, "negara_asal")
+    # Label "Tidak diketahui" dari hitung_unik bukan negara; jangan sampai jadi negara teratas.
+    negara = hitung_unik(df[df["negara_asal"].notna()], "negara_asal")
     per_maskapai = hitung_unik(df[~df["maskapai"].isin([mk.TIDAK_DIKENAL, mk.PENERBANGAN_UMUM])], "maskapai")
     return {
         "total": int(total),
