@@ -44,3 +44,9 @@ def test_popup_tanpa_bandara_tidak_tampil_nan():
         assert "Bandara terdekat" not in teks
     teks = peta.popup_pesawat(pd.Series({"callsign": "GIA1", "bandara_terdekat": "CGK", "jarak_bandara_km": 12.0}))
     assert "CGK (12 km)" in teks
+
+
+def test_angka_tak_hingga_tidak_tampil_inf():
+    assert peta._teks(float("inf"), " m") == "-"
+    assert peta._teks(1234.5, " m") == "1,234 m"
+    assert "rotate(0deg)" in peta.ikon_pesawat("#fff", float("inf")).options["html"]

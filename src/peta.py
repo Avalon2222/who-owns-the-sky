@@ -63,7 +63,8 @@ def warna_negara(negara: str | None) -> str:
 
 def ikon_pesawat(warna: str, arah: float | None, ukuran: int = 22) -> folium.DivIcon:
     """DivIcon berisi SVG pesawat yang diputar sebesar ``arah`` derajat searah jarum jam."""
-    sudut = 0 if arah is None or pd.isna(arah) else float(arah)
+    # inf dari data rusak menghasilkan "rotate(infdeg)" yang tidak sah di CSS.
+    sudut = 0 if arah is None or pd.isna(arah) or np.isinf(arah) else float(arah)
     svg = (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{ukuran}" height="{ukuran}" viewBox="0 0 24 24" '
         f'style="transform: rotate({sudut:.0f}deg); filter: drop-shadow(0 0 2px #000);">'
@@ -74,7 +75,7 @@ def ikon_pesawat(warna: str, arah: float | None, ukuran: int = 22) -> folium.Div
 
 def _teks(v, satuan: str = "", desimal: int = 0) -> str:
     # pd.isna juga menangkap pd.NA dan NaT, bukan hanya NaN float.
-    if v is None or pd.isna(v):
+    if v is None or pd.isna(v) or np.isinf(v):
         return "-"
     return f"{v:,.{desimal}f}{satuan}"
 
