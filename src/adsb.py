@@ -23,6 +23,7 @@ Catatan:
 
 from __future__ import annotations
 
+import math
 import os
 import re
 import time
@@ -234,6 +235,11 @@ def ambil_semua(
     return list(semua.values()), waktu, {"berhasil": berhasil, "total": len(titik)}
 
 
+def _angka_wajar(v: Any) -> bool:
+    """True untuk int/float berhingga; bool, teks, NaN, dan inf bukan umur yang sah."""
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
 def ac_ke_dataframe(daftar: list[dict[str, Any]], waktu_snapshot: int,
                     bbox: dict[str, float] | None = None) -> pd.DataFrame:
     """Mengubah daftar pesawat adsb.lol menjadi DataFrame berkolom sama dengan ``opensky.states_ke_dataframe``.
@@ -260,10 +266,11 @@ def ac_ke_dataframe(daftar: list[dict[str, Any]], waktu_snapshot: int,
             rate = ac.get("geom_rate")
         # Umur yang bukan angka (null, teks aneh) disamakan dengan ambil_semua: float() langsung akan gagal.
         seen = ac.get("seen")
-        seen = float(seen) if isinstance(seen, (int, float)) and not isinstance(seen, bool) else 0.0
+        # inf/NaN juga ditolak: int(waktu - inf) melempar OverflowError dan menggagalkan semua pesawat.
+        seen = float(seen) if _angka_wajar(seen) else 0.0
         # seen_pos null berarti umur posisi tidak dilaporkan; pakai seen, bukan 0 (seolah baru).
         seen_pos = ac.get("seen_pos")
-        if not isinstance(seen_pos, (int, float)) or isinstance(seen_pos, bool):
+        if not _angka_wajar(seen_pos):
             seen_pos = seen
         icao24 = str(ac.get("hex") or "").lower()
         baris.append({

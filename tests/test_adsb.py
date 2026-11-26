@@ -195,3 +195,12 @@ def test_ac_ke_dataframe_umur_bukan_angka_tidak_gagal():
     df = adsb.ac_ke_dataframe(daftar, 1_000)
     assert df.set_index("icao24").loc["8a0001", "waktu_posisi"] == 996
     assert df.set_index("icao24").loc["8a0002", "waktu_kontak"] == 1_000
+
+
+def test_ac_ke_dataframe_umur_tak_hingga_tidak_gagal():
+    daftar = [{"hex": "8a0001", "lat": -6.2, "lon": 106.8, "seen": float("inf"), "seen_pos": float("nan")},
+              {"hex": "8a0002", "lat": -6.3, "lon": 106.9, "seen": 5, "seen_pos": float("inf")}]
+    df = adsb.ac_ke_dataframe(daftar, 1_000).set_index("icao24")
+    assert df.loc["8a0001", "waktu_kontak"] == 1_000
+    assert df.loc["8a0001", "waktu_posisi"] == 1_000
+    assert df.loc["8a0002", "waktu_posisi"] == 995
