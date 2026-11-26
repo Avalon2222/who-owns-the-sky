@@ -81,3 +81,10 @@ def test_expires_in_null_tetap_memakai_token(monkeypatch):
     sesi = _SesiTokenAneh()
     opensky.ambil_states(session=sesi)
     assert sesi.get_kwargs["headers"] == {"Authorization": "Bearer tok456"}
+
+
+def test_states_ke_dataframe_lewati_state_null():
+    state = ["8a04d7", "GIA412  ", "Indonesia", 1, 1, 106.6, -6.1, 3000.0, False, 200.0, 90.0, 0.0, None, 3100.0, "1234", False, 0]
+    df = opensky.states_ke_dataframe({"time": 1_700_000_000, "states": [None, state, "rusak"]})
+    assert df["icao24"].tolist() == ["8a04d7"]
+    assert df.loc[0, "callsign"] == "GIA412"
