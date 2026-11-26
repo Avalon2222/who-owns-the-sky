@@ -204,3 +204,12 @@ def test_ac_ke_dataframe_umur_tak_hingga_tidak_gagal():
     assert df.loc["8a0001", "waktu_kontak"] == 1_000
     assert df.loc["8a0001", "waktu_posisi"] == 1_000
     assert df.loc["8a0002", "waktu_posisi"] == 995
+
+
+def test_ac_ke_dataframe_koordinat_rusak_dibuang():
+    daftar = [{"hex": "8a0001", "lat": "?", "lon": 106.8},
+              {"hex": "8a0002", "lat": -6.3, "lon": float("inf")},
+              {"hex": "8a0003", "lat": "-6.4", "lon": "107.0"}]
+    df = adsb.ac_ke_dataframe(daftar, 1_000)
+    assert df["icao24"].tolist() == ["8a0003"]
+    assert df.loc[0, "lat"] == -6.4

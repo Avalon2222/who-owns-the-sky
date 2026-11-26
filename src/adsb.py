@@ -240,6 +240,16 @@ def _angka_wajar(v: Any) -> bool:
     return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
 
+def _koordinat(v: Any) -> float | None:
+    if isinstance(v, bool) or v is None:
+        return None
+    try:
+        nilai = float(v)
+    except (TypeError, ValueError):
+        return None
+    return nilai if math.isfinite(nilai) else None
+
+
 def ac_ke_dataframe(daftar: list[dict[str, Any]], waktu_snapshot: int,
                     bbox: dict[str, float] | None = None) -> pd.DataFrame:
     """Mengubah daftar pesawat adsb.lol menjadi DataFrame berkolom sama dengan ``opensky.states_ke_dataframe``.
@@ -251,7 +261,8 @@ def ac_ke_dataframe(daftar: list[dict[str, Any]], waktu_snapshot: int,
     bbox = bbox or BBOX_INDONESIA
     baris = []
     for ac in daftar:
-        lat, lon = ac.get("lat"), ac.get("lon")
+        lat, lon = _koordinat(ac.get("lat")), _koordinat(ac.get("lon"))
+        # Koordinat teks rusak ("?") atau inf dibuang, bukan membuat float() menggagalkan semua pesawat.
         if lat is None or lon is None:
             continue
         alt_baro = ac.get("alt_baro")
@@ -279,8 +290,8 @@ def ac_ke_dataframe(daftar: list[dict[str, Any]], waktu_snapshot: int,
             "negara_asal": negara_registrasi(ac.get("r"), icao24),
             "waktu_posisi": int(waktu_snapshot - float(seen_pos)),
             "waktu_kontak": int(waktu_snapshot - float(seen)),
-            "lon": float(lon),
-            "lat": float(lat),
+            "lon": lon,
+            "lat": lat,
             "alt_baro_m": alt_baro_m,
             "di_darat": bool(di_darat),
             "kecepatan_ms": gs * KNOT_KE_MS if isinstance(gs, (int, float)) else None,
