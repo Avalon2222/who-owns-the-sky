@@ -167,6 +167,9 @@ def states_ke_dataframe(payload: dict[str, Any]) -> pd.DataFrame:
     states = payload.get("states") or []
     baris = []
     for s in states:
+        # State null/bukan list kadang muncul; list(None) melempar TypeError untuk seluruh snapshot.
+        if not isinstance(s, (list, tuple)):
+            continue
         s = list(s)[:17] + [None] * (17 - len(s))  # jaga-jaga jika kolom kurang
         baris.append(s)
     df = pd.DataFrame(baris, columns=KOLOM_STATE).drop(columns=["sensor"])
