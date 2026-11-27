@@ -453,3 +453,11 @@ def test_muat_bandara_kode_dirapikan_dan_tidak_ganda(tmp_path):
     df = muat_data.muat_bandara(path)
     assert df["kode"].tolist() == ["CGK", "DPS"]
     assert df["nama"].iloc[0] == "Soekarno-Hatta"
+
+
+@pytest.mark.parametrize(
+    "alt,lv,harapan",
+    [(float("inf"), 0.0, "Tidak diketahui"), (float("-inf"), 0.0, "Tidak diketahui"), (11000, float("inf"), "Jelajah")],
+)
+def test_fase_terbang_nilai_tak_hingga(alt, lv, harapan):
+    assert analisis.fase_terbang(alt, lv, False) == harapan
