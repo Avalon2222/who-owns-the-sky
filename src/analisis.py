@@ -129,7 +129,10 @@ def hitung_unik(df: pd.DataFrame, kolom: str, n: int | None = None) -> pd.DataFr
     if df.empty:
         return pd.DataFrame(columns=[kolom, "pesawat", "persen"])
     # groupby membuang NaN; pesawat tanpa nilai (mis. negara kosong) diberi label agar tetap terhitung.
-    kunci = df[kolom].astype("object").where(df[kolom].notna(), "Tidak diketahui")
+    # Teks kosong/spasi saja (OpenSky kadang mengirim origin_country "") juga tidak diketahui.
+    nilai = df[kolom].astype("object")
+    kosong = nilai.isna() | nilai.map(lambda v: isinstance(v, str) and not v.strip())
+    kunci = nilai.where(~kosong, "Tidak diketahui")
     # mergesort: nilai dengan jumlah sama tetap urut abjad (urutan groupby), tidak acak.
     s = df.assign(**{kolom: kunci}).groupby(kolom)["icao24"].nunique().sort_values(ascending=False, kind="mergesort")
     total = df["icao24"].nunique()
@@ -150,7 +153,8 @@ def ringkasan_kepemilikan(df: pd.DataFrame) -> dict:
     total = df["icao24"].nunique()
     indo = df.loc[df["negara_asal"] == "Indonesia", "icao24"].nunique()
     # Label "Tidak diketahui" dari hitung_unik bukan negara; jangan sampai jadi negara teratas.
-    negara = hitung_unik(df[df["negara_asal"].notna()], "negara_asal")
+    ada_negara = df["negara_asal"].notna() & (df["negara_asal"].astype(str).str.strip() != "")
+    negara = hitung_unik(df[ada_negara], "negara_asal")
     per_maskapai = hitung_unik(df[~df["maskapai"].isin([mk.TIDAK_DIKENAL, mk.PENERBANGAN_UMUM])], "maskapai")
     return {
         "total": int(total),
