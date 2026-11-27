@@ -461,3 +461,14 @@ def test_muat_bandara_kode_dirapikan_dan_tidak_ganda(tmp_path):
 )
 def test_fase_terbang_nilai_tak_hingga(alt, lv, harapan):
     assert analisis.fase_terbang(alt, lv, False) == harapan
+
+
+def test_negara_kosong_berupa_teks_tidak_jadi_label_kosong():
+    df = pd.DataFrame({
+        "icao24": ["a1", "a2", "a3", "a4"],
+        "negara_asal": ["", "  ", "", "Indonesia"],
+        "maskapai": [maskapai.TIDAK_DIKENAL] * 4,
+    })
+    hasil = analisis.hitung_unik(df, "negara_asal")
+    assert hasil["negara_asal"].tolist() == ["Tidak diketahui", "Indonesia"]
+    assert analisis.ringkasan_kepemilikan(df)["negara_teratas"] == "Indonesia"
