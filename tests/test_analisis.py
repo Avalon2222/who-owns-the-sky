@@ -438,3 +438,18 @@ def test_negara_teratas_bukan_tidak_diketahui():
     r = analisis.ringkasan_kepemilikan(df)
     assert r["negara_teratas"] == "Singapore"
     assert r["total"] == 4
+
+
+def test_muat_bandara_kode_dirapikan_dan_tidak_ganda(tmp_path):
+    path = tmp_path / "bandara.csv"
+    pd.DataFrame({
+        "kode": ["CGK", " cgk", "DPS "],
+        "nama": ["Soekarno-Hatta", "Soetta duplikat", "Ngurah Rai"],
+        "kota": ["Tangerang", "Tangerang", "Denpasar"],
+        "negara": ["Indonesia"] * 3,
+        "lat": [-6.1256, -6.1256, -8.7482],
+        "lon": [106.6559, 106.6559, 115.1672],
+    }).to_csv(path, index=False)
+    df = muat_data.muat_bandara(path)
+    assert df["kode"].tolist() == ["CGK", "DPS"]
+    assert df["nama"].iloc[0] == "Soekarno-Hatta"

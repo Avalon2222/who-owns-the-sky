@@ -29,7 +29,9 @@ def muat_bandara(path: Path = FILE_BANDARA) -> pd.DataFrame:
         raise ValueError(f"Kolom bandara hilang: {sorted(hilang)}")
     df = df.dropna(subset=["lat", "lon"])
     df = df[df["lat"].between(-12, 7) & df["lon"].between(94, 142)]
-    return df.reset_index(drop=True)
+    # Kode " cgk" dan "CGK" adalah bandara yang sama; baris ganda membuat bandara tersibuk tampil dua kali.
+    df = df.assign(kode=df["kode"].astype(str).str.strip().str.upper())
+    return df.drop_duplicates("kode", keep="first").reset_index(drop=True)
 
 
 def muat_sampel(path: Path = FILE_SAMPEL) -> pd.DataFrame:
