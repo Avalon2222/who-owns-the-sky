@@ -63,9 +63,11 @@ def fase_terbang(alt_m: float | None, laju_vertikal: float | None, di_darat: boo
     if di_darat is True or (not pd.isna(di_darat) and bool(di_darat)):
         return "Di darat"
     # pd.isna menangkap None, NaN, dan pd.NA (kolom Float64 nullable); pd.NA < 300 melempar TypeError.
-    if pd.isna(alt_m):
+    # Ketinggian inf (data rusak) juga tidak diketahui, bukan "Jelajah".
+    if pd.isna(alt_m) or not math.isfinite(float(alt_m)):
         return "Tidak diketahui"
-    lv = 0.0 if pd.isna(laju_vertikal) else float(laju_vertikal)
+    # Laju vertikal inf tidak bisa dipercaya; anggap datar seperti nilai kosong.
+    lv = 0.0 if pd.isna(laju_vertikal) or not math.isfinite(float(laju_vertikal)) else float(laju_vertikal)
     if alt_m < 300 and abs(lv) < 2.5:
         return "Di darat"
     if lv > 2.5:
