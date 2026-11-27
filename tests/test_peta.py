@@ -50,3 +50,13 @@ def test_angka_tak_hingga_tidak_tampil_inf():
     assert peta._teks(float("inf"), " m") == "-"
     assert peta._teks(1234.5, " m") == "1,234 m"
     assert "rotate(0deg)" in peta.ikon_pesawat("#fff", float("inf")).options["html"]
+
+
+def test_tooltip_callsign_nan_memakai_icao24():
+    pesawat = pd.DataFrame([{
+        "icao24": "8a0abc", "callsign": float("nan"), "maskapai": float("nan"), "negara_asal": "Indonesia",
+        "lat": -6.1, "lon": 106.6, "arah": 90.0,
+    }])
+    teks = _html(peta.peta_pesawat(pesawat))
+    assert "nan ·" not in teks
+    assert "8a0abc · " in teks

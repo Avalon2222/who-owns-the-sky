@@ -80,14 +80,24 @@ def _teks(v, satuan: str = "", desimal: int = 0) -> str:
     return f"{v:,.{desimal}f}{satuan}"
 
 
+def _str(v) -> str:
+    return v.strip() if isinstance(v, str) else ""
+
+
+def teks_tooltip(b: pd.Series) -> str:
+    """Tooltip singkat "callsign · maskapai"; callsign NaN/kosong diganti icao24, bukan tertulis "nan"."""
+    return html.escape(f"{_str(b.get('callsign')) or b.get('icao24', '')} · {_str(b.get('maskapai'))}")
+
+
 def popup_pesawat(b: pd.Series) -> str:
     """HTML popup untuk satu baris pesawat."""
     cs = b.get("callsign")
     # Callsign bisa NaN (float) dari CSV; NaN bernilai "benar" sehingga lolos dari `or`.
     cs = cs.strip() if isinstance(cs, str) else ""
     callsign = html.escape(cs or "(tanpa callsign)")
-    maskapai = html.escape(str(b.get("maskapai", "")))
-    negara = html.escape(str(b.get("negara_asal", "")))
+    # Maskapai/negara NaN (float) jangan tertulis "nan" di popup.
+    maskapai = html.escape(_str(b.get("maskapai")))
+    negara = html.escape(_str(b.get("negara_asal")))
     fase = html.escape(str(b.get("fase", "")))
     bandara = b.get("bandara_terdekat")
     # NaN itu truthy dan "-" berarti tidak ada bandara; keduanya tidak perlu baris "nan (-)".
@@ -158,7 +168,7 @@ def peta_pesawat(
         marker = folium.Marker(
             location=(b["lat"], b["lon"]),
             icon=ikon_pesawat(warna, b.get("arah")),
-            tooltip=html.escape(f"{b.get('callsign') or b.get('icao24')} · {b.get('maskapai', '')}"),
+            tooltip=teks_tooltip(b),
             popup=folium.Popup(popup_pesawat(b), max_width=320),
         )
         marker.add_to(fg_indo if b.get("negara_asal") == "Indonesia" else fg_asing)
