@@ -163,7 +163,8 @@ def ringkasan_kepemilikan(df: pd.DataFrame) -> dict:
         "persen_indonesia": round(indo / total * 100, 1) if total else 0.0,
         "negara_teratas": str(negara.iloc[0, 0]) if not negara.empty else "-",
         "maskapai_teratas": str(per_maskapai.iloc[0, 0]) if not per_maskapai.empty else "-",
-        "jumlah_negara": int(df["negara_asal"].nunique()),
+        # Teks kosong dan label "Tidak diketahui" bukan negara; jangan ikut dihitung.
+        "jumlah_negara": int(df.loc[ada_negara & (df["negara_asal"] != "Tidak diketahui"), "negara_asal"].nunique()),
     }
 
 

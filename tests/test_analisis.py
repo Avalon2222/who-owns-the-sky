@@ -472,3 +472,12 @@ def test_negara_kosong_berupa_teks_tidak_jadi_label_kosong():
     hasil = analisis.hitung_unik(df, "negara_asal")
     assert hasil["negara_asal"].tolist() == ["Tidak diketahui", "Indonesia"]
     assert analisis.ringkasan_kepemilikan(df)["negara_teratas"] == "Indonesia"
+
+
+def test_jumlah_negara_tidak_menghitung_kosong_dan_tidak_diketahui():
+    df = pd.DataFrame({
+        "icao24": ["a1", "a2", "a3", "a4", "a5"],
+        "negara_asal": ["", "  ", "Tidak diketahui", "Indonesia", "Singapore"],
+        "maskapai": [maskapai.TIDAK_DIKENAL] * 5,
+    })
+    assert analisis.ringkasan_kepemilikan(df)["jumlah_negara"] == 2
