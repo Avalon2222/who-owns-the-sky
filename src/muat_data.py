@@ -46,8 +46,13 @@ def muat_sampel(path: Path = FILE_SAMPEL) -> pd.DataFrame:
     # Data live selalu memakai hex huruf kecil; "7C1234" dan "7c1234 " harus dihitung satu pesawat.
     df["icao24"] = df["icao24"].str.strip().str.lower()
     df["di_darat"] = df["di_darat"].fillna(False).astype(bool)
+    # Baris dengan waktu snapshot atau koordinat berupa teks rusak dibuang, bukan menggagalkan seluruh sampel.
+    for kol in ("waktu_snapshot", "lat", "lon"):
+        df[kol] = pd.to_numeric(df[kol], errors="coerce")
+    df = df.dropna(subset=["waktu_snapshot", "lat", "lon"])
+    df["waktu_snapshot"] = df["waktu_snapshot"].astype("int64")
     df["waktu"] = pd.to_datetime(df["waktu_snapshot"], unit="s", utc=True)
-    return df.dropna(subset=["lat", "lon"]).reset_index(drop=True)
+    return df.reset_index(drop=True)
 
 
 def info_sampel(df: pd.DataFrame) -> dict:

@@ -496,3 +496,20 @@ def test_muat_bandara_koordinat_teks_rusak_dibuang(tmp_path):
     df = muat_data.muat_bandara(path)
     assert df["kode"].tolist() == ["CGK", "DPS"]
     assert df["lat"].dtype.kind == "f"
+
+
+def test_muat_sampel_waktu_snapshot_rusak_dibuang(tmp_path):
+    path = tmp_path / "snap.csv"
+    pd.DataFrame({
+        "icao24": ["7c1234", "8a0001", "8a0002"],
+        "callsign": ["QFA1", "GIA2", "GIA3"],
+        "negara_asal": ["Australia", "Indonesia", "Indonesia"],
+        "lat": [-6.0, -7.0, "x"],
+        "lon": [106.0, 110.0, 110.0],
+        "waktu_snapshot": [1, "kapan", 2],
+        "di_darat": [False, False, False],
+    }).to_csv(path, index=False)
+    df = muat_data.muat_sampel(path)
+    assert df["icao24"].tolist() == ["7c1234"]
+    assert df["waktu_snapshot"].dtype.kind == "i"
+    assert df["waktu"].iloc[0] == pd.Timestamp(1, unit="s", tz="UTC")
