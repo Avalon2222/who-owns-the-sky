@@ -481,3 +481,18 @@ def test_jumlah_negara_tidak_menghitung_kosong_dan_tidak_diketahui():
         "maskapai": [maskapai.TIDAK_DIKENAL] * 5,
     })
     assert analisis.ringkasan_kepemilikan(df)["jumlah_negara"] == 2
+
+
+def test_muat_bandara_koordinat_teks_rusak_dibuang(tmp_path):
+    path = tmp_path / "bandara.csv"
+    pd.DataFrame({
+        "kode": ["CGK", "XXX", "DPS"],
+        "nama": ["Soekarno-Hatta", "Rusak", "Ngurah Rai"],
+        "kota": ["Tangerang", "?", "Denpasar"],
+        "negara": ["Indonesia"] * 3,
+        "lat": ["-6.1256", "-", "-8.7482"],
+        "lon": ["106.6559", "106", "115.1672"],
+    }).to_csv(path, index=False)
+    df = muat_data.muat_bandara(path)
+    assert df["kode"].tolist() == ["CGK", "DPS"]
+    assert df["lat"].dtype.kind == "f"

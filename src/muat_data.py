@@ -27,6 +27,8 @@ def muat_bandara(path: Path = FILE_BANDARA) -> pd.DataFrame:
     hilang = wajib - set(df.columns)
     if hilang:
         raise ValueError(f"Kolom bandara hilang: {sorted(hilang)}")
+    # Koordinat berupa teks ("-") membuat between() gagal untuk seluruh tabel; jadikan angka dulu.
+    df = df.assign(lat=pd.to_numeric(df["lat"], errors="coerce"), lon=pd.to_numeric(df["lon"], errors="coerce"))
     df = df.dropna(subset=["lat", "lon"])
     df = df[df["lat"].between(-12, 7) & df["lon"].between(94, 142)]
     # Kode " cgk" dan "CGK" adalah bandara yang sama; baris ganda membuat bandara tersibuk tampil dua kali.
