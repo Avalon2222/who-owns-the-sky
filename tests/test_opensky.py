@@ -88,3 +88,12 @@ def test_states_ke_dataframe_lewati_state_null():
     df = opensky.states_ke_dataframe({"time": 1_700_000_000, "states": [None, state, "rusak"]})
     assert df["icao24"].tolist() == ["8a04d7"]
     assert df.loc[0, "callsign"] == "GIA412"
+
+
+def test_states_ke_dataframe_icao24_disamakan_huruf_kecil():
+    dasar = [None, "GIA412", "Indonesia", 1, 1, 106.6, -6.1, 3000.0, False, 200.0, 90.0, 0.0, None, 3100.0, "1234", False, 0]
+    a = ["8A04D7 "] + dasar[1:]
+    b = ["8a04d7"] + dasar[1:]
+    df = opensky.states_ke_dataframe({"time": 1_700_000_000, "states": [a, b]})
+    assert df["icao24"].tolist() == ["8a04d7", "8a04d7"]
+    assert df["icao24"].nunique() == 1

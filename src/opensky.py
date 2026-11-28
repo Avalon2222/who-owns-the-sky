@@ -175,6 +175,9 @@ def states_ke_dataframe(payload: dict[str, Any]) -> pd.DataFrame:
     df = pd.DataFrame(baris, columns=KOLOM_STATE).drop(columns=["sensor"])
 
     df["callsign"] = df["callsign"].fillna("").astype(str).str.strip()
+    # Alamat ICAO disamakan huruf kecil tanpa spasi seperti adsb.lol dan sampel offline,
+    # supaya "7C1234" dan "7c1234" tidak dihitung dua pesawat saat snapshot digabung.
+    df["icao24"] = df["icao24"].fillna("").astype(str).str.strip().str.lower()
     df["waktu_snapshot"] = int(payload.get("time") or 0)
     df["waktu"] = pd.to_datetime(df["waktu_snapshot"], unit="s", utc=True)
 
